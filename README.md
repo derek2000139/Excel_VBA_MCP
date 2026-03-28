@@ -119,7 +119,7 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile all -
         "--profile",
         "all"
       ],
-      "cwd": "D:/Tools/AI/ExcelForge",
+      "cwd": "YOUR_PROJECT_PATH",
       "_comment": "将 --profile 改为所需 profile（basic_edit / calc_format / automation / all 等），然后重启 MCP 服务"
     }
   }
@@ -131,8 +131,8 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile all -
 ```toml
 [mcp_servers.excelforge]
 command = "uv"
-args = ["run", "python", "-m", "excelforge.gateway.host", "--config", "D:/Tools/AI/ExcelForge/excel-mcp.yaml", "--profile", "basic_edit"]
-cwd = "D:/Tools/AI/ExcelForge"
+args = ["run", "python", "-m", "excelforge.gateway.host", "--config", "YOUR_PROJECT_PATH/excel-mcp.yaml", "--profile", "basic_edit"]
+cwd = "YOUR_PROJECT_PATH"
 startup_timeout_sec = 30
 tool_timeout_sec = 180
 ```
