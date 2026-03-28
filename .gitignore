@@ -75,3 +75,11 @@ run_server.bat
 设计文档*.md
 总体设计规范*.md
 多 MCP 共享 Runtime 架构设计文档.md
+V2开发记录文档.md
+开发记录文档.md
+
+# 设计模板和工作流（本地使用）
+.spec-workflow/
+
+# 运行时数据 v2
+.runtime_data_v2/

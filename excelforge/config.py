@@ -19,6 +19,14 @@ class ServerConfig(BaseModel):
     actor_id: str = "local-mcp-client"
 
 
+class RuntimeConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    version: str = "2.0.0"
+    pipe_name: str = r"\\.\pipe\excelforge-runtime"
+    data_dir: str = ".runtime_data_v2"
+
+
 class ExcelConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -118,6 +126,7 @@ class AppConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     server: ServerConfig
+    runtime: RuntimeConfig = Field(default_factory=RuntimeConfig)
     excel: ExcelConfig
     paths: PathsConfig
     limits: LimitsConfig
@@ -152,9 +161,11 @@ class AppConfig(BaseModel):
 
 def _default_config() -> AppConfig:
     root = _workspace_root()
-    data_dir = root / ".runtime_data"
+    runtime_cfg = RuntimeConfig()
+    data_dir = (root / runtime_cfg.data_dir).resolve()
     return AppConfig(
         server=ServerConfig(),
+        runtime=runtime_cfg,
         excel=ExcelConfig(),
         paths=PathsConfig(
             allowed_roots=[str(root)],

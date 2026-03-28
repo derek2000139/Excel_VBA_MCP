@@ -26,6 +26,7 @@ class AuditContext:
     args_summary: dict[str, object] | None = None
     client_request_id: str | None = None
     client_name: str | None = None
+    actor_id: str | None = None
 
 
 class AuditService:
@@ -34,12 +35,13 @@ class AuditService:
         self._repo = repo
 
     def record_operation(self, entry: AuditContext) -> None:
+        actor_id = entry.actor_id or self._config.server.actor_id
         record = AuditRecord(
             operation_id=entry.operation_id,
             tool_name=entry.tool_name,
             workbook_id=entry.workbook_id,
             file_path=entry.file_path,
-            actor_id=self._config.server.actor_id,
+            actor_id=actor_id,
             os_user=getpass.getuser(),
             machine_name=socket.gethostname(),
             client_name=entry.client_name,

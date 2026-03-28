@@ -1,17 +1,52 @@
 {
   "mcpServers": {
-    "ExcelForge": {
+    "excel-core": {
       "command": "uv",
       "args": [
         "run",
         "python",
         "-m",
-        "excelforge",
+        "excelforge.gateway.core",
         "--config",
-        "这里是ExcelForge项目的绝对路径/config.yaml",
-        "serve"
+        "D:/ExcelForge/excel-core-mcp.yaml"
       ],
-      "cwd": "这里是ExcelForge项目的绝对路径"
+      "cwd": "D:/ExcelForge"
+    },
+    "excel-vba": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "excelforge.gateway.vba",
+        "--config",
+        "D:/ExcelForge/excel-vba-mcp.yaml"
+      ],
+      "cwd": "D:/ExcelForge"
+    },
+    "excel-recovery": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "excelforge.gateway.recovery",
+        "--config",
+        "D:/ExcelForge/excel-recovery-mcp.yaml"
+      ],
+      "cwd": "D:/ExcelForge"
+    },
+    "excel-pq": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "excelforge.gateway.pq",
+        "--config",
+        "D:/ExcelForge/excel-pq-mcp.yaml"
+      ],
+      "cwd": "D:/ExcelForge"
     }
   }
 }

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from .common import ClientRequestMixin, StrictModel
 from .range_models import ScalarValue
@@ -75,6 +75,12 @@ class SheetDeleteSheetRequest(ClientRequestMixin):
     sheet_name: str = Field(max_length=31)
     preview: bool = False
     confirm_token: str = ""
+
+    @model_validator(mode="after")
+    def validate_confirm_token(self):
+        if not self.preview and not self.confirm_token:
+            raise ValueError("confirm_token is required when preview is false")
+        return self
 
 
 class SheetDeleteCrossReferences(StrictModel):

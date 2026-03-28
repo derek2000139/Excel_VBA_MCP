@@ -40,6 +40,7 @@ class OperationService:
         default_workbook_id: str | None = None,
         default_file_path: str | None = None,
         client_name: str | None = None,
+        actor_id: str | None = None,
     ) -> ToolEnvelope:
         operation_id = generate_id("op")
         started_at = utc_now_rfc3339()
@@ -97,6 +98,7 @@ class OperationService:
                 args_summary=args_summary,
                 client_request_id=client_request_id,
                 client_name=client_name,
+                actor_id=actor_id,
             )
         )
 

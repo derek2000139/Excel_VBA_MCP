@@ -1,0 +1,8 @@
+gateway:
+  id: "excel-core-mcp"
+  display_name: "ExcelForge Core"
+  runtime_data_dir: "./.runtime_data_v2"
+  auto_start_runtime: true
+  runtime_config_path: "./runtime-config.yaml"
+  connect_timeout_seconds: 10
+  call_timeout_seconds: 30

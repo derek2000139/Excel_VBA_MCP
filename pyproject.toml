@@ -1,7 +1,7 @@
 [project]
 name = "excelforge"
-version = "1.0.1"
-description = "Excel MCP toolset with STA worker, snapshot rollback and audit"
+version = "2.0.0"
+description = "ExcelForge V2 multi-MCP runtime with shared JSON-RPC pipe backend"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -19,6 +19,11 @@ dev = [
 
 [project.scripts]
 excelforge = "excelforge.main:main"
+excelforge-runtime = "excelforge.runtime.main:main"
+excelforge-core = "excelforge.gateway.core.main:main"
+excelforge-vba = "excelforge.gateway.vba.main:main"
+excelforge-recovery = "excelforge.gateway.recovery.main:main"
+excelforge-pq = "excelforge.gateway.pq.main:main"
 
 [build-system]
 requires = ["setuptools>=69", "wheel"]

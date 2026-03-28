@@ -1,6 +1,3 @@
-# Runtime config template for ExcelForge V2.
-# Copy this file to runtime-config.yaml and adjust paths.
-
 server:
   version: "2.0.0"
   actor_id: "excelforge-runtime"
