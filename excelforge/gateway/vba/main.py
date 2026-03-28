@@ -4,8 +4,7 @@ import argparse
 
 from mcp.server.fastmcp import FastMCP
 
-from excelforge.gateway.config import load_gateway_config
-from excelforge.gateway.runtime_client import RuntimeClient
+from excelforge.gateway.legacy_wrapper import create_legacy_runtime_client
 from excelforge.gateway.utils import call_runtime
 
 
@@ -17,9 +16,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    config = load_gateway_config(args.config)
-    runtime = RuntimeClient(config)
-    mcp = FastMCP(config.gateway.display_name or "ExcelForge VBA")
+    runtime = create_legacy_runtime_client("excel-vba-mcp")
+    mcp = FastMCP("ExcelForge VBA (Legacy)")
 
     @mcp.tool(name="vba.inspect_project")
     def vba_inspect_project(workbook_id: str, client_request_id: str = "") -> dict:

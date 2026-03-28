@@ -1,0 +1,189 @@
+bundles:
+  foundation:
+    description: "所有 profile 的基础包 - server/workbook/names"
+    domains:
+      - server
+      - workbook
+      - names
+    dependencies: []
+    required: true
+
+  edit:
+    description: "基础编辑 - sheet/range 操作"
+    domains:
+      - sheet
+      - range
+    dependencies:
+      - foundation
+
+  calc_format:
+    description: "计算与格式 - formula/format 工具"
+    domains:
+      - formula
+      - format
+    dependencies:
+      - foundation
+    recommended_with:
+      - edit
+
+  analysis:
+    description: "只读分析与诊断"
+    domains:
+      - analysis
+    dependencies:
+      - foundation
+
+  automation:
+    description: "VBA 自动化"
+    domains:
+      - vba
+    dependencies:
+      - foundation
+
+  recovery:
+    description: "恢复与回滚"
+    domains:
+      - recovery
+    dependencies:
+      - foundation
+
+  data:
+    description: "数据工作流 - PQ/Table"
+    domains:
+      - pq
+      - table
+    dependencies:
+      - foundation
+
+  report:
+    description: "报表与语义对象 - chart/pivot/model"
+    domains:
+      - chart
+      - pivot
+      - model
+    dependencies:
+      - foundation
+
+domains:
+  server:
+    tools:
+      - server.get_status
+      - server.health
+    maturity: stable
+    risk_level: low
+
+  workbook:
+    tools:
+      - workbook.open_file
+      - workbook.create_file
+      - workbook.save_file
+      - workbook.close_file
+      - workbook.inspect
+    maturity: stable
+    risk_level: low
+
+  names:
+    tools:
+      - names.inspect
+      - names.manage
+    maturity: stable
+    risk_level: low
+
+  sheet:
+    tools:
+      - sheet.create_sheet
+      - sheet.rename_sheet
+      - sheet.delete_sheet
+      - sheet.set_auto_filter
+      - sheet.get_conditional_formats
+      - sheet.get_data_validations
+    maturity: stable
+    risk_level: low
+
+  range:
+    tools:
+      - range.read_values
+      - range.write_values
+      - range.clear_contents
+      - range.copy
+      - range.insert_rows
+      - range.delete_rows
+      - range.insert_columns
+      - range.delete_columns
+      - range.sort_data
+      - range.merge
+    maturity: stable
+    risk_level: low
+
+  formula:
+    tools:
+      - formula.evaluate
+    maturity: stable
+    risk_level: low
+
+  format:
+    tools:
+      - format.set_number_format
+      - format.set_font
+      - format.set_fill
+      - format.set_border
+      - format.set_alignment
+      - format.set_column_width
+      - format.set_row_height
+    maturity: stable
+    risk_level: low
+
+  analysis:
+    tools:
+      - audit.list_operations
+    maturity: stable
+    risk_level: low
+
+  vba:
+    tools:
+      - vba.inspect_project
+      - vba.scan_code
+      - vba.sync_module
+      - vba.remove_module
+      - vba.execute
+      - vba.compile
+    maturity: stable
+    risk_level: medium
+
+  recovery:
+    tools:
+      - rollback.manage
+      - backups.manage
+      - snapshot.manage
+    maturity: stable
+    risk_level: medium
+
+  pq:
+    tools:
+      - pq.list_connections
+      - pq.list_queries
+      - pq.get_code
+      - pq.update_query
+      - pq.refresh
+    maturity: stable
+    risk_level: medium
+
+  table:
+    tools: []
+    maturity: experimental
+    risk_level: medium
+
+  chart:
+    tools: []
+    maturity: experimental
+    risk_level: medium
+
+  pivot:
+    tools: []
+    maturity: experimental
+    risk_level: medium
+
+  model:
+    tools: []
+    maturity: experimental
+    risk_level: medium

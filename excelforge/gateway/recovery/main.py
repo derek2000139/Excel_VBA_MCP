@@ -4,8 +4,7 @@ import argparse
 
 from mcp.server.fastmcp import FastMCP
 
-from excelforge.gateway.config import load_gateway_config
-from excelforge.gateway.runtime_client import RuntimeClient
+from excelforge.gateway.legacy_wrapper import create_legacy_runtime_client
 from excelforge.gateway.utils import call_runtime
 
 
@@ -17,9 +16,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    config = load_gateway_config(args.config)
-    runtime = RuntimeClient(config)
-    mcp = FastMCP(config.gateway.display_name or "ExcelForge Recovery")
+    runtime = create_legacy_runtime_client("excel-recovery-mcp")
+    mcp = FastMCP("ExcelForge Recovery (Legacy)")
 
     @mcp.tool(name="rollback.manage")
     def rollback_manage(

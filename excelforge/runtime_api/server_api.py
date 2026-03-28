@@ -36,12 +36,20 @@ class ServerApi:
             else:
                 warnings.append("Excel engine is still initializing")
 
+        runtime_config = self._ctx.services.config.runtime
+        data_dir = runtime_config.data_dir
+        pipe_name = runtime_config.pipe_name
+        instance_id = self._compute_runtime_instance_id(pipe_name, data_dir)
+
         return {
             "success": True,
             "code": "OK",
             "message": message,
             "data": {
                 "runtime_status": "running",
+                "runtime_instance_id": instance_id,
+                "runtime_endpoint": pipe_name,
+                "runtime_pid": self._get_runtime_pid(data_dir),
                 "excel": {
                     "ready": excel_ready,
                     "version": ready_status["version"],
@@ -54,3 +62,21 @@ class ServerApi:
             "meta": {},
             "recovery": None,
         }
+
+    def _compute_runtime_instance_id(self, pipe_name: str, data_dir: str) -> str:
+        import hashlib
+        raw = f"ExcelForge:default:default:{pipe_name}:{data_dir}"
+        short_hash = hashlib.sha1(raw.encode("utf-8")).hexdigest()[:8]
+        return f"rt_{short_hash}"
+
+    def _get_runtime_pid(self, data_dir: str) -> int | None:
+        import json
+        from pathlib import Path
+        lock_path = Path(data_dir).resolve() / "runtime.lock"
+        if not lock_path.exists():
+            return None
+        try:
+            payload = json.loads(lock_path.read_text(encoding="utf-8"))
+            return int(payload.get("pid", 0)) or None
+        except Exception:
+            return None

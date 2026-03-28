@@ -4,7 +4,6 @@ import argparse
 
 from mcp.server.fastmcp import FastMCP
 
-from excelforge.gateway.config import load_gateway_config
 from excelforge.gateway.core.tools import (
     register_format_tools,
     register_formula_tools,
@@ -14,7 +13,7 @@ from excelforge.gateway.core.tools import (
     register_workbook_tools,
 )
 from excelforge.gateway.core.tools.common import GatewayToolContext
-from excelforge.gateway.runtime_client import RuntimeClient
+from excelforge.gateway.legacy_wrapper import create_legacy_runtime_client
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -25,10 +24,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    config = load_gateway_config(args.config)
-
-    runtime = RuntimeClient(config)
-    mcp = FastMCP(config.gateway.display_name or "ExcelForge Core")
+    runtime = create_legacy_runtime_client("excel-core-mcp")
+    mcp = FastMCP("ExcelForge Core (Legacy)")
     ctx = GatewayToolContext(runtime=runtime)
 
     register_server_tools(mcp, ctx)
