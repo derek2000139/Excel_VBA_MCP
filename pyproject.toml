@@ -20,6 +20,7 @@ dev = [
 [project.scripts]
 excelforge = "excelforge.main:main"
 excelforge-runtime = "excelforge.runtime.main:main"
+excel-mcp = "excelforge.gateway.host:main"
 excelforge-core = "excelforge.gateway.core.main:main"
 excelforge-vba = "excelforge.gateway.vba.main:main"
 excelforge-recovery = "excelforge.gateway.recovery.main:main"
