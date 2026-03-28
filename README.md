@@ -1,4 +1,4 @@
-﻿# ExcelForge
+# ExcelForge
 
 ExcelForge v2.2 现在采用单一 MCP Host 入口：`excel-mcp`。
 
@@ -115,7 +115,7 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile all -
         "-m",
         "excelforge.gateway.host",
         "--config",
-        "D:/Tools/AI/ExcelForge/excel-mcp.yaml",
+        "YOUR_PROJECT_PATH/excel-mcp.yaml",
         "--profile",
         "all"
       ],

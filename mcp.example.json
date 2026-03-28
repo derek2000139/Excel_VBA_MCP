@@ -12,7 +12,7 @@
         "--profile",
         "basic_edit"
       ],
-      "cwd": "D:/Tools/AI/ExcelForge"
+      "cwd": "YOUR_PROJECT_PATH"
     }
   }
 }

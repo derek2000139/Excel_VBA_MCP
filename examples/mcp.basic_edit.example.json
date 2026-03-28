@@ -1,4 +1,4 @@
-﻿{
+{
   "mcpServers": {
     "excel": {
       "command": "uv",
@@ -8,11 +8,11 @@
         "-m",
         "excelforge.gateway.host",
         "--config",
-        "D:/Tools/AI/ExcelForge/excel-mcp.yaml",
+        "YOUR_PROJECT_PATH/excel-mcp.yaml",
         "--profile",
         "basic_edit"
       ],
-      "cwd": "D:/Tools/AI/ExcelForge"
+      "cwd": "YOUR_PROJECT_PATH"
     }
   }
 }
