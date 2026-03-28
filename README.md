@@ -16,7 +16,7 @@
 
 ## 版本
 
-当前版本: **v1.0.2**
+当前版本: **v2.1.0**
 
 ## 系统要求
 
@@ -159,8 +159,10 @@ pip install uv
 |------|------|----------|
 | v0.1-v0.5 | 2026-03-22~24 | 基础功能开发 |
 | v1.0.0 | 2026-03-24 | 工具组配置、简化工具链、Trae兼容 |
-| **v1.0.1** | **2026-03-24** | **工具合并、Profile机制、Worker健康检查、通配符路径** |
-| **v1.0.2** | **2026-03-26** | **workbook.inspect返回增加index字段、修复三元表达式为if-else、CLAUDE.md增加MCP设计决策说明** |
+| v1.0.1 | 2026-03-24 | 工具合并、Profile机制、Worker健康检查、通配符路径 |
+| v1.0.2 | 2026-03-26 | workbook.inspect返回增加index字段、修复三元表达式为if-else、CLAUDE.md增加MCP设计决策说明 |
+| **v2.0.0** | **2026-03-27** | **Runtime重架构、ExcelWorker生命周期管理、named pipe通信、snapshot/rollback/backup三大恢复机制** |
+| **v2.1.0** | **2026-03-28** | **Runtime启动预热机制、Windows探活API修复、Dispatcher就绪拦截、server.health健康检查、首次请求0.43秒响应** |
 
 ## 详细文档
 

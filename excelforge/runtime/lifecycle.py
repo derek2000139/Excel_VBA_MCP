@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -51,10 +52,54 @@ def remove_runtime_lock(config: AppConfig) -> None:
 
 
 def is_process_alive(pid: int) -> bool:
+    """
+    检查指定 PID 的进程是否存在。
+
+    Windows 兼容实现：不使用 os.kill(pid, 0)，
+    因为该调用在 Windows 上行为不一致，
+    某些 Python 版本下会产生 C 层异常状态污染。
+    """
     if pid <= 0:
         return False
+
+    if sys.platform == "win32":
+        return _is_process_alive_windows(pid)
+    else:
+        return _is_process_alive_posix(pid)
+
+
+def _is_process_alive_windows(pid: int) -> bool:
+    """Windows 实现：使用 ctypes 调用 OpenProcess + GetExitCodeProcess。"""
+    import ctypes
+    import ctypes.wintypes
+
+    PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+    STILL_ACTIVE = 259
+
+    kernel32 = ctypes.windll.kernel32
+
+    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+    if handle == 0:
+        return False
+
+    try:
+        exit_code = ctypes.wintypes.DWORD()
+        if kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+            return exit_code.value == STILL_ACTIVE
+        else:
+            return True
+    finally:
+        kernel32.CloseHandle(handle)
+
+
+def _is_process_alive_posix(pid: int) -> bool:
+    """POSIX 实现：使用 os.kill(pid, 0)。"""
     try:
         os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
         return True
     except OSError:
         return False

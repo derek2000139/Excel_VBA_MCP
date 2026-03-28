@@ -23,15 +23,34 @@ class ServerApi:
     def health(self, params: dict[str, Any], actor_id: str) -> dict[str, Any]:
         _ = params
         _ = actor_id
-        return self._ctx.run_operation(
-            method_name="server.health",
-            actor_id=actor_id,
-            client_request_id=params.get("client_request_id"),
-            operation_fn=lambda: {
-                "runtime_version": self._ctx.services.config.runtime.version,
-                "worker_state": self._ctx.services.worker.state,
-                "pipe_name": self._ctx.services.config.runtime.pipe_name,
-                "excel_ready": self._ctx.services.worker.context.app_manager.ready,
+        ready_status = self._ctx.services.worker.get_ready_status()
+        excel_ready = ready_status["ready"]
+        warnings: list[str] = []
+        message = "Runtime is running"
+
+        if not ready_status["warmup_started"]:
+            warnings.append("Excel warmup has not started yet")
+        elif not excel_ready:
+            if ready_status["warmup_error"]:
+                warnings.append(f"Excel initialization failed: {ready_status['warmup_error']}")
+            else:
+                warnings.append("Excel engine is still initializing")
+
+        return {
+            "success": True,
+            "code": "OK",
+            "message": message,
+            "data": {
+                "runtime_status": "running",
+                "excel": {
+                    "ready": excel_ready,
+                    "version": ready_status["version"],
+                    "warmup_started": ready_status["warmup_started"],
+                    "warmup_error": ready_status["warmup_error"],
+                },
+                "open_workbooks": self._ctx.services.worker.context.registry.count(),
             },
-            args_summary={},
-        )
+            "warnings": warnings,
+            "meta": {},
+            "recovery": None,
+        }

@@ -15,3 +15,12 @@ def register_server_tools(mcp: FastMCP, ctx: GatewayToolContext) -> None:
             method="server.status",
             params={"client_request_id": client_request_id},
         )
+
+    @mcp.tool(name="server.health")
+    def server_health(client_request_id: str = "") -> dict:
+        return call_runtime(
+            ctx.runtime,
+            tool_name="server.health",
+            method="server.health",
+            params={"client_request_id": client_request_id},
+        )

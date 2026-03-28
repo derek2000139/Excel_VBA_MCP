@@ -37,6 +37,9 @@ class ExcelConfig(BaseModel):
     health_ping_enabled: bool = True
     max_rebuild_attempts: int = Field(default=3, ge=1, le=10)
     ensure_visibility: bool = True
+    enable_warmup: bool = True
+    startup_timeout_seconds: int = Field(default=120, ge=10, le=600)
+    request_wait_ready_seconds: int = Field(default=15, ge=1, le=60)
 
 
 class PathsConfig(BaseModel):

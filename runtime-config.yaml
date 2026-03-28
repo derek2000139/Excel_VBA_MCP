@@ -15,6 +15,9 @@ excel:
   health_ping_enabled: true
   max_rebuild_attempts: 3
   ensure_visibility: true
+  enable_warmup: true
+  startup_timeout_seconds: 120
+  request_wait_ready_seconds: 15
 
 paths:
   allowed_roots:

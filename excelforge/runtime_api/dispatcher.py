@@ -18,9 +18,15 @@ from excelforge.runtime_api.workbook_api import WorkbookApi
 
 MethodFn = Callable[[dict[str, Any], str], dict[str, Any]]
 
+_NO_EXCEL_REQUIRED = frozenset({
+    "server.health",
+})
+
 
 class RuntimeApiDispatcher:
     def __init__(self, ctx: RuntimeApiContext) -> None:
+        self._ctx = ctx
+        self._config = ctx.services.config
         workbook = WorkbookApi(ctx)
         sheet = SheetApi(ctx)
         rng = RangeApi(ctx)
@@ -102,7 +108,33 @@ class RuntimeApiDispatcher:
                 ErrorCode.E400_BAD_REQUEST,
                 f"Unsupported runtime method: {method}",
             )
+
+        if method not in _NO_EXCEL_REQUIRED:
+            self._check_ready()
+
         return handler(params, actor_id)
+
+    def _check_ready(self) -> None:
+        worker = self._ctx.services.worker
+        if worker.is_ready():
+            return
+
+        wait_timeout = self._config.excel.request_wait_ready_seconds
+        ready = worker.wait_ready(timeout=wait_timeout)
+        if ready:
+            return
+
+        ready_status = worker.get_ready_status()
+        if ready_status["warmup_error"]:
+            raise ExcelForgeError(
+                ErrorCode.E503_EXCEL_INIT_FAILED,
+                f"Excel initialization failed: {ready_status['warmup_error']}",
+            )
+        else:
+            raise ExcelForgeError(
+                ErrorCode.E503_RUNTIME_NOT_READY,
+                "Excel engine is still initializing, please retry shortly",
+            )
 
     def method_names(self) -> list[str]:
         return sorted(self._methods.keys())

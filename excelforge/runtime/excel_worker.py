@@ -47,6 +47,10 @@ class ExcelWorker:
             registry=WorkbookRegistry(),
             worker=self,
         )
+        self._ready_event = threading.Event()
+        self._warmup_started = False
+        self._warmup_error: Exception | None = None
+        self._excel_version: str | None = None
 
     @property
     def state(self) -> str:
@@ -228,25 +232,81 @@ class ExcelWorker:
 
     def _recover_excel_instance(self) -> bool:
         self._invalidate_excel_session()
+        self._warmup_error = None
+        self._ready_event.clear()
         attempts = int(self._config.excel.max_rebuild_attempts)
         for _ in range(attempts):
             try:
-                self._context.app_manager.ensure_app()
-            except Exception:
+                app = self._context.app_manager.ensure_app()
+                self._excel_version = app.Version
+                self._warmup_error = None
+            except Exception as exc:
+                self._warmup_error = exc
                 continue
             self._rebuild_count += 1
             self._last_rebuild_at = utc_now_rfc3339()
             self._hard_stopped = False
             self._set_state("running")
+            self._ready_event.set()
             return True
 
         self._hard_stopped = True
         self._set_state("stopped")
+        self._ready_event.set()
         return False
 
     def _invalidate_excel_session(self) -> None:
         self._context.registry.bump_generation()
         self._context.app_manager.invalidate()
+
+    def warmup(self, timeout_seconds: int = 120) -> bool:
+        if self._warmup_started and self._ready_event.is_set():
+            return self._warmup_error is None
+
+        if not self._warmup_started:
+            self._warmup_started = True
+            self.start()
+
+            def _do_warmup(ctx: WorkerContext) -> None:
+                try:
+                    app = ctx.app_manager.ensure_app()
+                    self._excel_version = app.Version
+                    self._warmup_error = None
+                except Exception as exc:
+                    self._warmup_error = exc
+                finally:
+                    self._ready_event.set()
+
+            fut: Future[None] = Future()
+            task = WorkerTask(
+                func=_do_warmup,
+                future=fut,
+                allow_rebuild=False,
+                requires_excel=True,
+            )
+            self._queue.put(task)
+
+        finished = self._ready_event.wait(timeout=timeout_seconds)
+        if not finished:
+            return False
+        return self._warmup_error is None
+
+    def is_ready(self) -> bool:
+        return self._ready_event.is_set() and self._warmup_error is None
+
+    def wait_ready(self, timeout: float | None = None) -> bool:
+        finished = self._ready_event.wait(timeout=timeout)
+        if not finished:
+            return False
+        return self._warmup_error is None
+
+    def get_ready_status(self) -> dict:
+        return {
+            "ready": self.is_ready(),
+            "version": self._excel_version,
+            "warmup_started": self._warmup_started,
+            "warmup_error": str(self._warmup_error) if self._warmup_error else None,
+        }
 
     def mark_unhealthy(self, reason: str) -> None:
         self._set_state("degraded")

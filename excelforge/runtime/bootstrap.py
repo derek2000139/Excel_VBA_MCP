@@ -53,6 +53,7 @@ def create_runtime_services(config_path: str | None = None) -> RuntimeServices:
     db.init_schema()
 
     worker = ExcelWorker(config)
+    worker.start()
 
     audit_repo = AuditRepository(db)
     snapshot_repo = SnapshotRepository(db)
@@ -80,6 +81,9 @@ def create_runtime_services(config_path: str | None = None) -> RuntimeServices:
     operation_service.run_cleanup_on_startup()
 
     server_service = ServerService(config, worker, snapshot_service, backup_service)
+
+    if config.excel.enable_warmup:
+        worker.warmup(timeout_seconds=config.excel.startup_timeout_seconds)
 
     return RuntimeServices(
         config=config,
