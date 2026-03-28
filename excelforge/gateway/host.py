@@ -219,19 +219,18 @@ def register_tools_for_profile(
 
     for tool_name in enabled_tools:
         runtime_method = TOOL_MANIFEST_MAP.get(tool_name, tool_name)
-        tool_description = tool_name.replace(".", " ").replace("_", " ")
 
-        def make_handler(t: str, m: str):
+        def create_handler(runtime_client, tool, method):
             def handler(**kwargs):
                 return call_runtime(
-                    runtime,
-                    tool_name=t,
-                    method=m,
+                    runtime_client,
+                    tool_name=tool,
+                    method=method,
                     params=kwargs,
                 )
             return handler
 
-        mcp.add_tool(tool_name, tool_description, make_handler(tool_name, runtime_method))
+        mcp.add_tool(tool_name, tool_name, create_handler(runtime, tool_name, runtime_method))
 
 
 def main(argv: list[str] | None = None) -> int:
