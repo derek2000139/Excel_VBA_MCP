@@ -15,6 +15,7 @@ from excelforge.runtime_api.recovery_api import RecoveryApi
 from excelforge.runtime_api.server_api import ServerApi
 from excelforge.runtime_api.sheet_api import SheetApi
 from excelforge.runtime_api.table_api import TableApi
+from excelforge.runtime_api.workbook_ops_api import WorkbookOpsApi
 from excelforge.runtime_api.vba_api import VbaApi
 from excelforge.runtime_api.workbook_api import WorkbookApi
 
@@ -42,6 +43,7 @@ class RuntimeApiDispatcher:
         pq = PqApi(ctx)
         table = TableApi(ctx)
         analysis = AnalysisApi(ctx)
+        workbook_ops = WorkbookOpsApi(ctx)
 
         self._methods: dict[str, MethodFn] = {
             "workbook.open": workbook.open,
@@ -117,6 +119,12 @@ class RuntimeApiDispatcher:
             "analysis.scan_links": analysis.scan_links,
             "analysis.scan_hidden": analysis.scan_hidden,
             "analysis.export_report": analysis.export_report,
+            "workbook.save_as": workbook_ops.save_as,
+            "workbook.refresh_all": workbook_ops.refresh_all,
+            "workbook.calculate": workbook_ops.calculate,
+            "workbook.list_links": workbook_ops.list_links,
+            "workbook.export_pdf": workbook_ops.export_pdf,
+            "sheet.export_csv": workbook_ops.export_csv,
         }
 
     def dispatch(self, method: str, params: dict[str, Any], actor_id: str) -> dict[str, Any]:

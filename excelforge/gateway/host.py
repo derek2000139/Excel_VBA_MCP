@@ -101,6 +101,12 @@ TOOL_MANIFEST_MAP: dict[str, str] = {
     "analysis.scan_links": "analysis.scan_links",
     "analysis.scan_hidden": "analysis.scan_hidden",
     "analysis.export_report": "analysis.export_report",
+    "workbook.save_as": "workbook.save_as",
+    "workbook.refresh_all": "workbook.refresh_all",
+    "workbook.calculate": "workbook.calculate",
+    "workbook.list_links": "workbook.list_links",
+    "workbook.export_pdf": "workbook.export_pdf",
+    "sheet.export_csv": "sheet.export_csv",
 }
 
 # ── 工具参数 JSON Schema 注册表 ─────────────────────
@@ -612,6 +618,40 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
         "report_format": {**_STR, "description": "报告格式: text/json", "default": "text"},
         "include_formulas": {**_BOOL, "description": "是否包含公式", "default": False},
         "include_links": {**_BOOL, "description": "是否包含链接", "default": False},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    # ── workbook_ops ──
+    "workbook.save_as": ("另存工作簿", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "save_as_path": {**_STR, "description": "保存路径"},
+        "file_format": {"type": "string", "description": "文件格式: xlsx/xlsm/xlsb/csv", "default": None},
+        "password": {"type": "string", "description": "文件密码（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "workbook.refresh_all": ("刷新所有数据", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "workbook.calculate": ("重新计算", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "workbook.list_links": ("列出外部链接", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "workbook.export_pdf": ("导出 PDF", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "file_path": {**_STR, "description": "PDF 保存路径"},
+        "include_hidden_sheets": {**_BOOL, "description": "是否包含隐藏工作表", "default": False},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "sheet.export_csv": ("导出 CSV", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "sheet_name": {**_STR, "description": "工作表名称"},
+        "file_path": {**_STR, "description": "CSV 保存路径"},
+        "delimiter": {"type": "string", "description": "分隔符", "default": ","},
+        "include_header": {**_BOOL, "description": "是否包含表头", "default": True},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
 }

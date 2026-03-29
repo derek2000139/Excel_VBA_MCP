@@ -78,10 +78,11 @@ bundles:
 
   workbook_ops:
     description: "工作簿治理与导出（v2.4 新增）"
-    tools: []
+    domains:
+      - workbook_ops
     dependencies:
       - foundation
-    maturity: planned
+    maturity: experimental
 
   artifact_export:
     description: "文件包提取与导出（v2.5 预留）"
@@ -236,6 +237,17 @@ domains:
       - table.set_style
       - table.toggle_total_row
       - table.delete
+    maturity: experimental
+    risk_level: medium
+
+  workbook_ops:
+    tools:
+      - workbook.save_as
+      - workbook.refresh_all
+      - workbook.calculate
+      - workbook.list_links
+      - workbook.export_pdf
+      - sheet.export_csv
     maturity: experimental
     risk_level: medium
 
