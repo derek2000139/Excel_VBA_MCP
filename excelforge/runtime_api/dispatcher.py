@@ -4,6 +4,7 @@ from typing import Any, Callable
 
 from excelforge.models.error_models import ErrorCode, ExcelForgeError
 from excelforge.runtime_api.audit_api import AuditApi
+from excelforge.runtime_api.analysis_api import AnalysisApi
 from excelforge.runtime_api.context import RuntimeApiContext
 from excelforge.runtime_api.formula_api import FormulaApi
 from excelforge.runtime_api.format_api import FormatApi
@@ -13,6 +14,7 @@ from excelforge.runtime_api.range_api import RangeApi
 from excelforge.runtime_api.recovery_api import RecoveryApi
 from excelforge.runtime_api.server_api import ServerApi
 from excelforge.runtime_api.sheet_api import SheetApi
+from excelforge.runtime_api.table_api import TableApi
 from excelforge.runtime_api.vba_api import VbaApi
 from excelforge.runtime_api.workbook_api import WorkbookApi
 
@@ -38,6 +40,8 @@ class RuntimeApiDispatcher:
         audit = AuditApi(ctx)
         server = ServerApi(ctx)
         pq = PqApi(ctx)
+        table = TableApi(ctx)
+        analysis = AnalysisApi(ctx)
 
         self._methods: dict[str, MethodFn] = {
             "workbook.open": workbook.open,
@@ -100,6 +104,19 @@ class RuntimeApiDispatcher:
             "pq.update_query": pq.update_query,
             "pq.refresh": pq.refresh,
             "pq.list_connections": pq.list_connections,
+            "table.list_tables": table.list_tables,
+            "table.create": table.create,
+            "table.inspect": table.inspect,
+            "table.resize": table.resize,
+            "table.rename": table.rename,
+            "table.set_style": table.set_style,
+            "table.toggle_total_row": table.toggle_total_row,
+            "table.delete": table.delete,
+            "analysis.scan_structure": analysis.scan_structure,
+            "analysis.scan_formulas": analysis.scan_formulas,
+            "analysis.scan_links": analysis.scan_links,
+            "analysis.scan_hidden": analysis.scan_hidden,
+            "analysis.export_report": analysis.export_report,
         }
 
     def dispatch(self, method: str, params: dict[str, Any], actor_id: str) -> dict[str, Any]:

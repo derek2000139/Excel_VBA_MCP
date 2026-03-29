@@ -263,9 +263,16 @@ class VbaService:
         try:
             return workbook.VBProject
         except Exception as exc:
+            error_msg = str(exc).lower()
+            if "permission" in error_msg or "access" in error_msg:
+                detail = "VBA project access denied. Try closing and reopening the workbook."
+            elif "rpc" in error_msg or "server" in error_msg:
+                detail = "COM connection issue. Try restarting ExcelForge Runtime."
+            else:
+                detail = f"VBA project unavailable: {exc}"
             raise ExcelForgeError(
                 ErrorCode.E403_VBA_ACCESS_DENIED,
-                "Cannot access VBA project. Enable 'Trust access to the VBA project object model' in Excel.",
+                f"Cannot access VBA project. {detail}",
             ) from exc
 
     @staticmethod

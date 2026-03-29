@@ -1,35 +1,40 @@
 bundles:
   foundation:
-    description: "所有 profile 的基础包 - server / workbook / names"
+    description: "所有场景基础：服务状态与工作簿 I/O"
     domains:
       - server
       - workbook
-      - names
     dependencies: []
     required: true
 
-  edit:
-    description: "基础编辑 - sheet / range 操作"
+  names:
+    description: "命名管理"
     domains:
-      - sheet
-      - range
+      - names
+    dependencies:
+      - foundation
+
+  edit_basic:
+    description: "高频基础编辑"
+    domains:
+      - sheet_basic
+      - range_basic
+    dependencies:
+      - foundation
+
+  edit_structure:
+    description: "结构编辑与高级操作"
+    domains:
+      - sheet_structure
+      - range_structure
     dependencies:
       - foundation
 
   calc_format:
-    description: "计算与格式 - formula / format"
+    description: "公式与格式"
     domains:
       - formula
       - format
-    dependencies:
-      - foundation
-    recommended_with:
-      - edit
-
-  analysis:
-    description: "只读分析与诊断"
-    domains:
-      - analysis
     dependencies:
       - foundation
 
@@ -41,14 +46,14 @@ bundles:
       - foundation
 
   recovery:
-    description: "恢复与回滚"
+    description: "恢复、快照与备份"
     domains:
       - recovery
     dependencies:
       - foundation
 
   data:
-    description: "数据工作流 - PQ / Table"
+    description: "数据查询与表格管理"
     domains:
       - pq
       - table
@@ -56,7 +61,7 @@ bundles:
       - foundation
 
   report:
-    description: "报表与语义对象 - chart / pivot / model"
+    description: "报表对象（预留扩充）"
     domains:
       - chart
       - pivot
@@ -64,11 +69,32 @@ bundles:
     dependencies:
       - foundation
 
+  analysis:
+    description: "分析、审计与结构扫描"
+    domains:
+      - analysis
+    dependencies:
+      - foundation
+
+  workbook_ops:
+    description: "工作簿治理与导出（v2.4 新增）"
+    tools: []
+    dependencies:
+      - foundation
+    maturity: planned
+
+  artifact_export:
+    description: "文件包提取与导出（v2.5 预留）"
+    tools: []
+    dependencies:
+      - foundation
+    maturity: planned
+
 domains:
   server:
     tools:
-      - server.get_status
       - server.health
+      - server.get_status
     maturity: stable
     risk_level: low
 
@@ -92,25 +118,35 @@ domains:
     maturity: stable
     risk_level: low
 
-  sheet:
+  sheet_basic:
     tools:
       - sheet.create_sheet
       - sheet.rename_sheet
+      - sheet.inspect_structure
+    maturity: stable
+    risk_level: low
+
+  sheet_structure:
+    tools:
       - sheet.preview_delete
       - sheet.delete_sheet
-      - sheet.inspect_structure
       - sheet.set_auto_filter
       - sheet.get_conditional_formats
       - sheet.get_data_validations
     maturity: stable
     risk_level: low
 
-  range:
+  range_basic:
     tools:
       - range.read_values
       - range.write_values
       - range.clear_contents
       - range.copy
+    maturity: stable
+    risk_level: low
+
+  range_structure:
+    tools:
       - range.insert_rows
       - range.delete_rows
       - range.insert_columns
@@ -123,8 +159,8 @@ domains:
 
   formula:
     tools:
-      - formula.fill_range
       - formula.set_single
+      - formula.fill_range
       - formula.get_dependencies
       - formula.repair
     maturity: stable
@@ -145,6 +181,11 @@ domains:
   analysis:
     tools:
       - audit.list_operations
+      - analysis.scan_structure
+      - analysis.scan_formulas
+      - analysis.scan_links
+      - analysis.scan_hidden
+      - analysis.export_report
     maturity: stable
     risk_level: low
 
@@ -152,24 +193,24 @@ domains:
     tools:
       - vba.inspect_project
       - vba.get_module_code
-      - vba.scan_code
       - vba.sync_module
       - vba.remove_module
       - vba.execute
+      - vba.scan_code
+      - vba.compile
       - vba.import_module
       - vba.export_module
-      - vba.compile
     maturity: stable
     risk_level: medium
 
   recovery:
     tools:
-      - rollback.manage
-      - rollback.preview_snapshot
-      - rollback.restore_snapshot
       - snapshot.manage
       - snapshot.get_stats
       - snapshot.cleanup
+      - rollback.manage
+      - rollback.preview_snapshot
+      - rollback.restore_snapshot
       - backups.manage
       - backups.restore
     maturity: stable
@@ -186,7 +227,15 @@ domains:
     risk_level: medium
 
   table:
-    tools: []
+    tools:
+      - table.list_tables
+      - table.create
+      - table.inspect
+      - table.resize
+      - table.rename
+      - table.set_style
+      - table.toggle_total_row
+      - table.delete
     maturity: experimental
     risk_level: medium
 

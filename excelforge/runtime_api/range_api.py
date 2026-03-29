@@ -61,7 +61,7 @@ class RangeApi:
     def write(self, params: dict[str, Any], actor_id: str) -> dict[str, Any]:
         req = RangeWriteValuesRequest(
             workbook_id=params.get("workbook_id", ""),
-            sheet_name=params.get("sheet_name", ""),
+            sheet_name=params.get("sheet_name"),
             start_cell=params.get("start_cell") or params.get("range", ""),
             values=params.get("values") or [],
             client_request_id=params.get("client_request_id"),

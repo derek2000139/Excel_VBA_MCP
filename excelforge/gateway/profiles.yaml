@@ -1,77 +1,80 @@
 profiles:
   basic_edit:
-    description: "基础编辑 - 只加载 workbook / sheet / range / names / server"
+    description: "基础编辑场景"
+    category: user
     bundles:
       - foundation
-      - edit
-    tool_budget: 35
-    risk_level: low
+      - edit_basic
+    tool_budget: 20
 
   calc_format:
-    description: "公式与格式 - 在基础编辑上增加 formula / format"
+    description: "公式与格式编辑"
+    category: user
     bundles:
       - foundation
-      - edit
+      - edit_basic
       - calc_format
-    tool_budget: 45
-    risk_level: low
+    tool_budget: 30
 
   automation:
-    description: "自动化 - VBA 与恢复工具"
+    description: "VBA 自动化与恢复"
+    category: user
     bundles:
       - foundation
       - automation
       - recovery
     tool_budget: 30
-    risk_level: medium
 
   data_workflow:
-    description: "数据工作流 - PQ / Table / 审计分析"
+    description: "数据查询与表格管理"
+    category: user
     bundles:
       - foundation
       - data
       - analysis
-    tool_budget: 20
-    risk_level: medium
+    tool_budget: 25
 
   reporting:
-    description: "报表与可视化 - report / analysis"
+    description: "报表与分析（预留扩充）"
+    category: user
     bundles:
       - foundation
-      - report
       - analysis
-    tool_budget: 20
-    risk_level: medium
+    tool_budget: 25
 
   all:
-    description: "全部工具 - 开发 / 调试用途"
+    description: "全部工具，仅用于 CLI / 回归测试"
+    category: development
     bundles:
       - foundation
-      - edit
+      - names
+      - edit_basic
+      - edit_structure
       - calc_format
-      - analysis
       - automation
       - recovery
       - data
+      - analysis
       - report
+      - workbook_ops
     tool_budget: null
-    risk_level: high
     is_development: true
 
   vba_first:
-    description: "调试测试专用 - VBA/Recovery核心工具"
+    description: "VBA 专题开发"
+    category: development
+    bundles:
+      - foundation
+      - automation
+    tool_budget: 20
+
+  trea_debug:
+    description: "TraeAI 完整调试专用"
+    category: development
     bundles:
       - foundation
       - automation
       - recovery
-    tool_budget: 30
-    risk_level: medium
-
-  trea_debug:
-    description: "TreaAI调试专用 - Format/Recovery工具"
-    bundles:
-      - foundation
-      - calc_format
-      - recovery
+      - data
+      - analysis
     tool_budget: 35
-    risk_level: medium

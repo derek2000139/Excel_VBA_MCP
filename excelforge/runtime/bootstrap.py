@@ -22,6 +22,8 @@ from excelforge.services.sheet_service import SheetService
 from excelforge.services.snapshot_service import SnapshotService
 from excelforge.services.vba_service import VbaService
 from excelforge.services.workbook_service import WorkbookService
+from excelforge.services.table_service import TableService
+from excelforge.services.analysis_service import AnalysisService
 
 
 @dataclass
@@ -42,6 +44,8 @@ class RuntimeServices:
     snapshot_service: SnapshotService
     backup_service: BackupService
     audit_service: AuditService
+    table_service: TableService
+    analysis_service: AnalysisService
 
     def shutdown(self) -> None:
         self.worker.stop(wait_seconds=15)
@@ -75,6 +79,8 @@ def create_runtime_services(config_path: str | None = None) -> RuntimeServices:
     named_range_service = NamedRangeService(config, worker, backup_service)
     rollback_service = RollbackService(config, worker, snapshot_repo, snapshot_service, backup_service)
     audit_service = AuditService(config, audit_repo)
+    table_service = TableService(config, worker, snapshot_service, backup_service)
+    analysis_service = AnalysisService(config, worker)
 
     cleanup_service = CleanupService(config, audit_repo, snapshot_repo, backup_repo)
     operation_service = OperationService(config, audit_service, cleanup_service)
@@ -102,4 +108,6 @@ def create_runtime_services(config_path: str | None = None) -> RuntimeServices:
         snapshot_service=snapshot_service,
         backup_service=backup_service,
         audit_service=audit_service,
+        table_service=table_service,
+        analysis_service=analysis_service,
     )

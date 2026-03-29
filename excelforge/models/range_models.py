@@ -38,7 +38,7 @@ class RangeReadValuesData(StrictModel):
 
 class RangeWriteValuesRequest(ClientRequestMixin):
     workbook_id: str
-    sheet_name: str = Field(max_length=31)
+    sheet_name: str | None = None
     start_cell: str = Field(pattern=A1_CELL_PATTERN)
     values: list[list[ScalarValue]]
 

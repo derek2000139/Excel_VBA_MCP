@@ -42,7 +42,7 @@ class FormatService:
         self,
         *,
         workbook_id: str,
-        sheet_name: str,
+        sheet_name: str | None = None,
         range_address: str,
         style: dict[str, Any] | None | StyleModel,
     ) -> dict[str, Any]:
@@ -199,7 +199,7 @@ class FormatService:
         return start, end
 
     @staticmethod
-    def _require_sheet(ctx: Any, workbook_id: str, sheet_name: str) -> tuple[Any, Any]:
+    def _require_sheet(ctx: Any, workbook_id: str, sheet_name: str | None) -> tuple[Any, Any]:
         handle = ctx.registry.get(workbook_id)
         if handle is None:
             if ctx.registry.is_stale_workbook_id(workbook_id):
@@ -209,10 +209,15 @@ class FormatService:
                 )
             raise ExcelForgeError(ErrorCode.E404_WORKBOOK_NOT_OPEN, f"Workbook not open: {workbook_id}")
         workbook = handle.workbook_obj
-        try:
-            ws = workbook.Worksheets(sheet_name)
-        except Exception as exc:
-            raise ExcelForgeError(ErrorCode.E404_SHEET_NOT_FOUND, f"Sheet not found: {sheet_name}") from exc
+        if sheet_name is None or sheet_name == "None" or sheet_name == "":
+            ws = workbook.ActiveSheet
+            if ws is None:
+                ws = workbook.Worksheets(1)
+        else:
+            try:
+                ws = workbook.Worksheets(sheet_name)
+            except Exception as exc:
+                raise ExcelForgeError(ErrorCode.E404_SHEET_NOT_FOUND, f"Sheet not found: {sheet_name}") from exc
         return workbook, ws
 
     @staticmethod

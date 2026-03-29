@@ -1,0 +1,64 @@
+profiles:
+  minimal:
+    description: "最小连通性验证"
+    category: development
+    bundles:
+      - foundation
+    tool_budget: 10
+
+  vba_first:
+    description: "VBA 专题开发"
+    category: development
+    bundles:
+      - foundation
+      - automation
+    tool_budget: 20
+
+  format_first:
+    description: "格式专题开发"
+    category: development
+    bundles:
+      - foundation
+      - calc_format
+    tool_budget: 25
+
+  recovery_first:
+    description: "恢复专题开发"
+    category: development
+    bundles:
+      - foundation
+      - recovery
+    tool_budget: 20
+
+  pq_first:
+    description: "PQ / 数据专题开发"
+    category: development
+    bundles:
+      - foundation
+      - data
+    tool_budget: 18
+
+  edit_first:
+    description: "编辑专题开发"
+    category: development
+    bundles:
+      - foundation
+      - edit_basic
+    tool_budget: 15
+
+  names_first:
+    description: "命名管理专题开发"
+    category: development
+    bundles:
+      - foundation
+      - names
+    tool_budget: 15
+
+  trae_debug:
+    description: "Trae 调试专用"
+    category: development
+    bundles:
+      - foundation
+      - edit_basic
+      - calc_format
+    tool_budget: 30

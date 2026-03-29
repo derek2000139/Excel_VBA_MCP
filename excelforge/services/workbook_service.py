@@ -205,6 +205,7 @@ class WorkbookService:
                 "dirty": not bool(workbook.Saved),
                 "has_macros": self._has_macros(handle.file_path, workbook),
                 "sheet_count": len(sheets),
+                "active_sheet": str(workbook.ActiveSheet.Name),
                 "sheets": sheets,
                 "file_format": handle.file_format,
                 "max_rows": handle.max_rows,

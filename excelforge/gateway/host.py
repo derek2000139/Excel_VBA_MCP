@@ -88,6 +88,19 @@ TOOL_MANIFEST_MAP: dict[str, str] = {
     "pq.update_query": "pq.update_query",
     "pq.refresh": "pq.refresh",
     "audit.list_operations": "audit.list_operations",
+    "table.list_tables": "table.list_tables",
+    "table.create": "table.create",
+    "table.inspect": "table.inspect",
+    "table.resize": "table.resize",
+    "table.rename": "table.rename",
+    "table.set_style": "table.set_style",
+    "table.toggle_total_row": "table.toggle_total_row",
+    "table.delete": "table.delete",
+    "analysis.scan_structure": "analysis.scan_structure",
+    "analysis.scan_formulas": "analysis.scan_formulas",
+    "analysis.scan_links": "analysis.scan_links",
+    "analysis.scan_hidden": "analysis.scan_hidden",
+    "analysis.export_report": "analysis.export_report",
 }
 
 # ── 工具参数 JSON Schema 注册表 ─────────────────────
@@ -229,7 +242,7 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     }),
     "range.write_values": ("写入单元格值", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "start_cell": {**_STR, "description": "起始单元格（如 A1）"},
         "values": {"type": "array", "items": {"type": "object"}, "description": "要写入的值（二维数组）"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
@@ -304,17 +317,17 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     # ── format ──
     "format.set_number_format": ("设置数字格式", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "单元格区域"},
         "number_format": {**_STR, "description": "数字格式（如 '0.00', 'yyyy-mm-dd'）"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "format.set_font": ("设置字体", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "单元格区域"},
-        "name": {**_STR, "description": "字体名称（如 'Arial', '宋体'）"},
-        "size": {**_INT, "description": "字体大小"},
+        "name": {**_STR, "description": "字体名称（如 'Arial', '宋体'）（可选）", "default": None},
+        "size": {**_INT, "description": "字体大小（可选）", "default": None},
         "bold": {**_BOOL, "description": "是否加粗", "default": False},
         "italic": {**_BOOL, "description": "是否斜体", "default": False},
         "font_color": {**_STR, "description": "字体颜色（如 'FF0000' 红色）", "default": None},
@@ -322,7 +335,7 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     }),
     "format.set_fill": ("设置填充色", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "单元格区域"},
         "fill_color": {**_STR, "description": "填充颜色（如 'FFFF00' 黄色）"},
         "pattern": {**_STR, "description": "填充图案（如 'solid', 'gray75'）", "default": "solid"},
@@ -330,7 +343,7 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     }),
     "format.set_border": ("设置边框", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "单元格区域"},
         "border_style": {**_STR, "description": "边框样式（如 'thin', 'medium', 'thick'）"},
         "border_type": {**_STR, "description": "边框类型: all/outside/inside/left/right/top/bottom", "default": "all"},
@@ -338,7 +351,7 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     }),
     "format.set_alignment": ("设置对齐方式", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "单元格区域"},
         "horizontal": {**_STR, "description": "水平对齐: left/center/right/general", "default": None},
         "vertical": {**_STR, "description": "垂直对齐: top/center/bottom", "default": None},
@@ -347,20 +360,20 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     }),
     "format.set_column_width": ("自动调整列宽", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "列区域（如 A:D 或 A）"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "format.set_row_height": ("自动调整行高", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "行区域"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     # ── formula ──
     "formula.fill_range": ("批量填充公式", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "目标区域（如 A2:A100）"},
         "formula": {**_STR, "description": "公式表达式（如 =B2*C2）"},
         "formula_type": {**_STR, "description": "公式类型: standard / array / r1c1", "default": "standard"},
@@ -369,7 +382,7 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     }),
     "formula.set_single": ("设置单个公式", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "cell": {**_STR, "description": "单元格地址（如 A1）"},
         "formula": {**_STR, "description": "公式表达式"},
         "formula_type": {**_STR, "description": "公式类型: standard / array / r1c1", "default": "standard"},
@@ -377,13 +390,13 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
     }),
     "formula.get_dependencies": ("获取公式依赖链", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "cell": {**_STR, "description": "单元格地址（如 A1）"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "formula.repair": ("修复/扫描公式", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "sheet_name": {**_STR, "description": "工作表名称"},
+        "sheet_name": {**_STR, "description": "工作表名称（可选，默认激活表）", "default": None},
         "range": {**_STR, "description": "扫描区域"},
         "action": {**_STR, "description": "操作: scan（扫描）/ repair（修复）", "default": "scan"},
         "replacements": {"type": "array", "items": {"type": "object"}, "description": "替换规则列表（action=repair 时使用）", "default": None},
@@ -520,6 +533,87 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
         "operation_id": {"type": "string", "description": "操作 ID", "default": None},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
+    # ── table ──
+    "table.list_tables": ("列出工作簿中所有表格", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选，不填则搜索所有表）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "table.create": ("将区域转换为表格", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "sheet_name": {**_STR, "description": "工作表名称"},
+        "range_address": {**_STR, "description": "要转换为表格的区域（如 A1:D10）"},
+        "table_name": {"type": "string", "description": "表格名称（可选，自动生成）", "default": None},
+        "has_header": {**_BOOL, "description": "是否有标题行", "default": True},
+        "style_name": {"type": "string", "description": "表格样式名称（如 TableStyleMedium2）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "table.inspect": ("检查表格结构", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "table_name": {**_STR, "description": "表格名称"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "table.resize": ("调整表格范围", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "table_name": {**_STR, "description": "表格名称"},
+        "new_range_address": {**_STR, "description": "新的表格区域（如 A1:E20）"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "table.rename": ("重命名表格", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "table_name": {**_STR, "description": "当前表格名称"},
+        "new_name": {**_STR, "description": "新名称"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "table.set_style": ("设置表格样式", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "table_name": {**_STR, "description": "表格名称"},
+        "style_name": {"type": "string", "description": "样式名称（可选，不填则移除样式）", "default": None},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "table.toggle_total_row": ("开关总计行", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "table_name": {**_STR, "description": "表格名称"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "table.delete": ("删除表格（保留数据）", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "table_name": {**_STR, "description": "表格名称"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    # ── analysis ──
+    "analysis.scan_structure": ("扫描工作簿结构", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "analysis.scan_formulas": ("扫描公式分布", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "sheet_name": {"type": "string", "description": "工作表名称（可选）", "default": None},
+        "scan_range": {"type": "string", "description": "扫描区域（可选）", "default": None},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "analysis.scan_links": ("扫描外部链接", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "analysis.scan_hidden": ("扫描隐藏元素", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "analysis.export_report": ("生成分析报告", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "report_format": {**_STR, "description": "报告格式: text/json", "default": "text"},
+        "include_formulas": {**_BOOL, "description": "是否包含公式", "default": False},
+        "include_links": {**_BOOL, "description": "是否包含链接", "default": False},
+        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+    }),
 }
 
 
@@ -602,6 +696,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--print-runtime-endpoint",
         action="store_true",
         help="Print resolved Runtime endpoint on startup",
+    )
+    parser.add_argument(
+        "--dump-tools",
+        action="store_true",
+        help="Output final tool list for current profile and exit",
+    )
+    parser.add_argument(
+        "--dump-tools-with-index",
+        action="store_true",
+        help="Output tool list with order index and exit",
+    )
+    parser.add_argument(
+        "--dump-profile-resolution",
+        action="store_true",
+        help="Output profile/bundle resolution process and exit",
     )
     return parser
 
@@ -730,16 +839,208 @@ def list_bundles_and_exit(bundles_path: Path | None = None) -> None:
         print(f"    domains: {', '.join(info['domains'])}")
 
 
+def dump_tools_for_profile(
+    profile_name: str,
+    extra_bundles: list[str],
+    disabled_bundles: list[str],
+    profiles_path: Path | None = None,
+    bundles_path: Path | None = None,
+) -> list[str]:
+    resolver = ProfileResolver(profiles_path)
+    bundle_registry = BundleRegistry(bundles_path)
+
+    profile_info = resolver.resolve(profile_name)
+    all_bundles = list(profile_info["bundles"])
+    for b in extra_bundles:
+        if b not in all_bundles:
+            all_bundles.append(b)
+    for b in disabled_bundles:
+        if b in all_bundles:
+            all_bundles.remove(b)
+
+    resolved_bundles = bundle_registry.resolve_bundles(all_bundles)
+    enabled_tools = bundle_registry.get_all_tools(resolved_bundles)
+    return enabled_tools
+
+
+def dump_tools_and_exit(
+    profile_name: str,
+    extra_bundles: list[str],
+    disabled_bundles: list[str],
+    profiles_path: Path | None = None,
+    bundles_path: Path | None = None,
+) -> None:
+    resolver = ProfileResolver(profiles_path)
+    bundle_registry = BundleRegistry(bundles_path)
+
+    profile_info = resolver.resolve(profile_name)
+    all_bundles = list(profile_info["bundles"])
+    for b in extra_bundles:
+        if b not in all_bundles:
+            all_bundles.append(b)
+    for b in disabled_bundles:
+        if b in all_bundles:
+            all_bundles.remove(b)
+
+    resolved_bundles = bundle_registry.resolve_bundles(all_bundles)
+    enabled_tools = bundle_registry.get_all_tools(resolved_bundles)
+
+    print(f"Profile: {profile_name}")
+    print(f"Category: {profile_info.get('category', 'unknown')}")
+    budget = profile_info.get("tool_budget")
+    print(f"Tool Budget: {budget if budget is not None else 'unlimited'}")
+    print(f"Actual Tools: {len(enabled_tools)}")
+    budget_status = "OK" if budget is None or len(enabled_tools) <= budget else "WARNING"
+    print(f"Budget Status: {'OK' if budget_status == 'OK' else 'WARNING'}")
+    print()
+    print("Bundles:")
+    for idx, bundle_name in enumerate(resolved_bundles, start=1):
+        bundle_tools = bundle_registry.get_bundle_tools(bundle_name)
+        tool_count = len(bundle_tools)
+        print(f"  [{idx}] {bundle_name} ({tool_count} tools)")
+    print()
+    print("Tools:")
+    for idx, tool_name in enumerate(enabled_tools, start=1):
+        print(f"  {tool_name}")
+
+
+def dump_tools_with_index_and_exit(
+    profile_name: str,
+    extra_bundles: list[str],
+    disabled_bundles: list[str],
+    profiles_path: Path | None = None,
+    bundles_path: Path | None = None,
+) -> None:
+    resolver = ProfileResolver(profiles_path)
+    bundle_registry = BundleRegistry(bundles_path)
+
+    profile_info = resolver.resolve(profile_name)
+    all_bundles = list(profile_info["bundles"])
+    for b in extra_bundles:
+        if b not in all_bundles:
+            all_bundles.append(b)
+    for b in disabled_bundles:
+        if b in all_bundles:
+            all_bundles.remove(b)
+
+    resolved_bundles = bundle_registry.resolve_bundles(all_bundles)
+    enabled_tools = bundle_registry.get_all_tools(resolved_bundles)
+
+    print(f"Profile: {profile_name}")
+    print(f"Category: {profile_info.get('category', 'unknown')}")
+    budget = profile_info.get("tool_budget")
+    print(f"Tool Budget: {budget if budget is not None else 'unlimited'}")
+    print(f"Actual Tools: {len(enabled_tools)}")
+    budget_status = "OK" if budget is None or len(enabled_tools) <= budget else "WARNING"
+    print(f"Budget Status: {budget_status}")
+    print()
+    print("Bundles:")
+    for idx, bundle_name in enumerate(resolved_bundles, start=1):
+        bundle_tools = bundle_registry.get_bundle_tools(bundle_name)
+        tool_count = len(bundle_tools)
+        print(f"  [{idx}] {bundle_name} ({tool_count} tools)")
+    print()
+    print("Tools:")
+    for idx, tool_name in enumerate(enabled_tools, start=1):
+        schema_entry = TOOL_PARAM_SCHEMA.get(tool_name)
+        desc = schema_entry[0] if schema_entry else ""
+        print(f"  [{idx:02d}] {tool_name}")
+        if desc:
+            print(f"      {desc}")
+
+
+def dump_profile_resolution_and_exit(
+    profile_name: str,
+    extra_bundles: list[str],
+    disabled_bundles: list[str],
+    profiles_path: Path | None = None,
+    bundles_path: Path | None = None,
+) -> None:
+    resolver = ProfileResolver(profiles_path)
+    bundle_registry = BundleRegistry(bundles_path)
+
+    print("=== Profile Resolution ===")
+    print(f"Requested profile: {profile_name}")
+    print()
+
+    profile_info = resolver.resolve(profile_name)
+    print(f"Profile '{profile_name}':")
+    print(f"  description: {profile_info.get('description', 'N/A')}")
+    print(f"  category: {profile_info.get('category', 'unknown')}")
+    print(f"  tool_budget: {profile_info.get('tool_budget', 'unlimited')}")
+    print(f"  base bundles: {profile_info.get('bundles', [])}")
+    print()
+
+    all_bundles = list(profile_info["bundles"])
+    print(f"Extra bundles (--enable-bundle): {extra_bundles}")
+    for b in extra_bundles:
+        if b not in all_bundles:
+            all_bundles.append(b)
+            print(f"  + {b} added")
+    print()
+
+    print(f"Disabled bundles (--disable-bundle): {disabled_bundles}")
+    for b in disabled_bundles:
+        if b in all_bundles:
+            all_bundles.remove(b)
+            print(f"  - {b} removed")
+    print()
+
+    print(f"Final bundle list: {all_bundles}")
+    print()
+
+    resolved_bundles = bundle_registry.resolve_bundles(all_bundles)
+    print(f"Resolved bundles (with dependencies): {resolved_bundles}")
+    print()
+
+    for bundle_name in resolved_bundles:
+        bundle_info = bundle_registry.get_bundle_info(bundle_name)
+        deps = bundle_info.get("dependencies", [])
+        bundle_tools = bundle_registry.get_bundle_tools(bundle_name)
+        print(f"Bundle '{bundle_name}':")
+        print(f"  description: {bundle_info.get('description', 'N/A')}")
+        print(f"  dependencies: {deps if deps else 'none'}")
+        print(f"  tools ({len(bundle_tools)}):")
+        for tool in bundle_tools:
+            print(f"    - {tool}")
+        print()
+
+    enabled_tools = bundle_registry.get_all_tools(resolved_bundles)
+    print(f"=== Total: {len(enabled_tools)} tools ===")
+
+
 def check_tool_budget(tool_count: int, profile_info: dict[str, Any]) -> None:
     budget = profile_info.get("tool_budget")
     if budget is None:
         return
     if tool_count > budget:
+        warning_msg = (
+            f"[ExcelForge WARNING] Tool count ({tool_count}) exceeds budget ({budget}) "
+            f"for profile '{profile_info['name']}'. Consider reducing enabled bundles."
+        )
+        print(warning_msg, file=sys.stderr)
         warnings.warn(
             f"Tool count ({tool_count}) exceeds budget ({budget}) for profile '{profile_info['name']}'. "
             f"Consider reducing enabled bundles.",
             UserWarning,
         )
+
+
+def log_profile_summary(profile_info: dict[str, Any], enabled_tools: list[str], resolved_bundles: list[str]) -> None:
+    import logging
+    logger = logging.getLogger(__name__)
+
+    logger.info("=== Profile Summary ===")
+    logger.info("Profile: %s", profile_info.get("name"))
+    logger.info("Category: %s", profile_info.get("category", "unknown"))
+    logger.info("Description: %s", profile_info.get("description", "N/A"))
+    budget = profile_info.get("tool_budget")
+    logger.info("Tool Budget: %s", budget if budget is not None else "unlimited")
+    logger.info("Resolved Bundles (%d): %s", len(resolved_bundles), resolved_bundles)
+    logger.info("Enabled Tools: %d", len(enabled_tools))
+    if budget is not None and len(enabled_tools) > budget:
+        logger.warning("Tool count EXCEEDS budget! Budget=%d, Actual=%d", budget, len(enabled_tools))
+    logger.info("========================")
 
 
 def _resolve_path(base_dir: Path, raw_path: str | None) -> str | None:
@@ -922,6 +1223,7 @@ def register_tools_for_profile(
     logger.info("[Host] Resolved VBA tools=%s", [t for t in enabled_tools if t.startswith("vba.")])
 
     check_tool_budget(len(enabled_tools), profile_info)
+    log_profile_summary(profile_info, enabled_tools, resolved_bundles)
 
     registered_vba_tools = []
     for tool_name in enabled_tools:
@@ -959,6 +1261,36 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.list_bundles:
         list_bundles_and_exit(bundles_path)
+        return 0
+
+    if args.dump_profile_resolution:
+        dump_profile_resolution_and_exit(
+            profile_name=args.profile,
+            extra_bundles=args.enabled_bundles,
+            disabled_bundles=args.disabled_bundles,
+            profiles_path=profiles_path,
+            bundles_path=bundles_path,
+        )
+        return 0
+
+    if args.dump_tools:
+        dump_tools_and_exit(
+            profile_name=args.profile,
+            extra_bundles=args.enabled_bundles,
+            disabled_bundles=args.disabled_bundles,
+            profiles_path=profiles_path,
+            bundles_path=bundles_path,
+        )
+        return 0
+
+    if args.dump_tools_with_index:
+        dump_tools_with_index_and_exit(
+            profile_name=args.profile,
+            extra_bundles=args.enabled_bundles,
+            disabled_bundles=args.disabled_bundles,
+            profiles_path=profiles_path,
+            bundles_path=bundles_path,
+        )
         return 0
 
     try:

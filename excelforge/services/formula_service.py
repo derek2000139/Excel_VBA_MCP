@@ -390,6 +390,8 @@ class FormulaService:
     ) -> dict[str, Any]:
         parsed = parse_cell_address(cell)
 
+        CROSS_SHEET_REF_RE = re.compile(r"'?([^'!()=]+)'?!([A-Za-z]+:?[A-Za-z\d]*)")
+
         def op(ctx: Any) -> dict[str, Any]:
             handle = ctx.registry.get(workbook_id)
             if handle is None:
@@ -417,22 +419,39 @@ class FormulaService:
             calculated_value = to_scalar(rng.Value2)
 
             precedents: list[dict[str, str]] = []
+            seen_precedents: set[tuple[str, str]] = set()
+
             try:
                 for area in rng.Precedents.Areas:
-                    precedents.append({
-                        "sheet": str(area.Worksheet.Name),
-                        "range": area.Address.replace("$", ""),
-                    })
+                    ws_name = str(area.Worksheet.Name)
+                    addr = area.Address.replace("$", "")
+                    key = (ws_name, addr)
+                    if key not in seen_precedents:
+                        seen_precedents.add(key)
+                        precedents.append({"sheet": ws_name, "range": addr})
             except Exception:
                 pass
 
+            if formula:
+                matches = CROSS_SHEET_REF_RE.findall(formula)
+                for match in matches:
+                    ref_sheet = match[0]
+                    ref_range = match[1]
+                    key = (ref_sheet, ref_range)
+                    if key not in seen_precedents:
+                        seen_precedents.add(key)
+                        precedents.append({"sheet": ref_sheet, "range": ref_range})
+
             dependents: list[dict[str, str]] = []
+            seen_dependents: set[tuple[str, str]] = set()
             try:
                 for area in rng.Dependents.Areas:
-                    dependents.append({
-                        "sheet": str(area.Worksheet.Name),
-                        "range": area.Address.replace("$", ""),
-                    })
+                    ws_name = str(area.Worksheet.Name)
+                    addr = area.Address.replace("$", "")
+                    key = (ws_name, addr)
+                    if key not in seen_dependents:
+                        seen_dependents.add(key)
+                        dependents.append({"sheet": ws_name, "range": addr})
             except Exception:
                 pass
 

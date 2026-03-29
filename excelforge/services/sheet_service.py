@@ -202,10 +202,15 @@ class SheetService:
             if position == "first":
                 ws = wb.Sheets.Add(Before:=wb.Sheets(1))
             elif position == "last":
-                ws = wb.Sheets.Add(After:=wb.Sheets(wb.Sheets.Count))
+                last_index = int(wb.Sheets.Count)
+                ws = wb.Sheets.Add(After:=wb.Sheets(last_index))
             else:
-                # after_active: Excel 原生行为，在当前激活表之后插入
-                ws = wb.Sheets.Add(After:=wb.ActiveSheet)
+                if position == "after_active" or position == "after":
+                    ws = wb.Sheets.Add(After:=wb.ActiveSheet)
+                elif position == "before_active" or position == "before":
+                    ws = wb.Sheets.Add(Before:=wb.ActiveSheet)
+                else:
+                    ws = wb.Sheets.Add(After:=wb.Sheets(int(wb.Sheets.Count)))
             ws.Name = sheet_name
             return {
                 "workbook_id": workbook_id,
