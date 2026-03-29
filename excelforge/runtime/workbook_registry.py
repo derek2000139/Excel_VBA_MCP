@@ -149,6 +149,68 @@ class WorkbookRegistry:
             logger.info(f"[Registry] Cleaned {len(stale_ids)} stale handle(s)")
         return len(stale_ids)
 
+    def validate_all_handles(self) -> dict:
+        """
+        验证所有 workbook handle，返回详细的验证结果。
+
+        Returns:
+            包含验证结果的字典，包括每个 handle 的状态
+        """
+        results: dict[str, dict] = {}
+        valid_count = 0
+        stale_count = 0
+
+        for workbook_id, handle in list(self._items.items()):
+            is_valid = self.validate_handle(workbook_id)
+            results[workbook_id] = {
+                "workbook_name": handle.workbook_name,
+                "file_path": handle.file_path,
+                "is_valid": is_valid,
+                "generation": self._generation,
+            }
+            if is_valid:
+                valid_count += 1
+            else:
+                stale_count += 1
+
+        return {
+            "total": len(self._items),
+            "valid_count": valid_count,
+            "stale_count": stale_count,
+            "generation": self._generation,
+            "handles": results,
+        }
+
+    def prune_stale_handles(self) -> dict:
+        """
+        清理所有失效的 stale handle，只做局部清理。
+
+        Returns:
+            包含清理结果的字典
+        """
+        before_count = len(self._items)
+        stale_ids = []
+
+        for workbook_id in list(self._items.keys()):
+            if not self.validate_handle(workbook_id):
+                stale_ids.append(workbook_id)
+
+        for workbook_id in stale_ids:
+            self._items.pop(workbook_id, None)
+
+        after_count = len(self._items)
+        pruned_count = before_count - after_count
+
+        if pruned_count > 0:
+            logger.info(f"[Registry] Pruned {pruned_count} stale handle(s)")
+
+        return {
+            "before_count": before_count,
+            "after_count": after_count,
+            "pruned_count": pruned_count,
+            "pruned_ids": stale_ids,
+        }
+
     def get_workbook_count(self) -> dict[str, int]:
         """
         返回注册统计信息。

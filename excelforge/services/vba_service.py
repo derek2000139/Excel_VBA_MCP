@@ -594,61 +594,6 @@ class VbaService:
             requires_excel=True,
         )
 
-    def execute_inline(
-        self,
-        *,
-        workbook_id: str,
-        code: str,
-        procedure_name: str,
-        timeout_seconds: int,
-    ) -> dict[str, Any]:
-        if not self._config.vba_policy.allow_execution:
-            raise ExcelForgeError(
-                ErrorCode.E409_VBA_EXECUTION_DISABLED,
-                "VBA execution is disabled by configuration",
-            )
-
-        if len(code) > self._config.vba_policy.max_inline_code_size_bytes:
-            raise ExcelForgeError(
-                ErrorCode.E400_VBA_CODE_TOO_LARGE,
-                f"Inline code exceeds max size of {self._config.vba_policy.max_inline_code_size_bytes} bytes",
-            )
-
-        scan_result = self._scanner.scan(code, "standard_module")
-        if scan_result.blocked:
-            raise ExcelForgeError(
-                ErrorCode.E403_VBA_EXECUTION_BLOCKED,
-                f"VBA execution blocked due to security policy: {scan_result.risk_level}",
-            )
-
-        temp_name = f"_EF_{uuid.uuid4().hex[:8]}" if 'uuid' in dir() else f"_EF_{int(time.time() * 1000) % 100000000:08x}"
-        try:
-            self.sync_module(
-                workbook_id=workbook_id,
-                module_name=temp_name,
-                module_type="standard_module",
-                code=code,
-                overwrite=False,
-            )
-
-            result = self.execute_macro(
-                workbook_id=workbook_id,
-                procedure_name=procedure_name,
-                arguments=[],
-                timeout_seconds=timeout_seconds,
-            )
-
-            return result
-
-        finally:
-            try:
-                self.remove_module(
-                    workbook_id=workbook_id,
-                    module_name=temp_name,
-                )
-            except Exception:
-                pass
-
     def export_module(
         self,
         *,

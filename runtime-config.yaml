@@ -19,6 +19,16 @@ excel:
   startup_timeout_seconds: 120
   request_wait_ready_seconds: 15
 
+worker:
+  health_check_on_operation: true
+  auto_prune_stale_handles: true
+  recycle_on_no_workbooks: true
+  recycle_auto_reopen: false
+  max_operation_count: 500
+  max_high_risk_operations: 50
+  max_exceptions: 10
+  max_uptime_seconds: 14400
+
 paths:
   allowed_roots:
     - "*"

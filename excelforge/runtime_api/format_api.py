@@ -13,7 +13,40 @@ class FormatApi:
         workbook_id = str(params.get("workbook_id", ""))
         sheet_name = str(params.get("sheet_name", ""))
         range_address = str(params.get("range", ""))
-        style = params.get("style") or {}
+
+        if params.get("style"):
+            style = params.get("style")
+        else:
+            style = {}
+            if "number_format" in params and params["number_format"]:
+                style["number_format"] = params["number_format"]
+            if "name" in params:
+                style["font_name"] = params["name"]
+            if "size" in params:
+                style["font_size"] = params["size"]
+            if "bold" in params:
+                style["font_bold"] = params["bold"]
+            if "italic" in params:
+                style["font_italic"] = params["italic"]
+            if "color" in params:
+                pass
+            if "font_color" in params:
+                style["font_color"] = params["font_color"]
+            if "fill_color" in params:
+                style["fill_color"] = params["fill_color"]
+            if "pattern" in params:
+                pass
+            if "border_style" in params:
+                style["border_style"] = params["border_style"]
+            if "border_type" in params:
+                style["border_type"] = params["border_type"]
+            if "horizontal" in params:
+                style["horizontal_alignment"] = params["horizontal"]
+            if "vertical" in params:
+                style["vertical_alignment"] = params["vertical"]
+            if "wrap_text" in params:
+                style["wrap_text"] = params["wrap_text"]
+
         return self._ctx.run_operation(
             method_name="format.set_style",
             actor_id=actor_id,

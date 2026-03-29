@@ -12,6 +12,7 @@ from excelforge.models.error_models import ErrorCode, ExcelForgeError
 from excelforge.runtime.excel_app import ExcelAppManager
 from excelforge.runtime.retry_policy import run_with_com_retry
 from excelforge.runtime.workbook_registry import WorkbookRegistry
+from excelforge.runtime.worker_health import WorkerHealth, WorkerMetrics
 from excelforge.runtime.worker_manager import ExcelWorkerManager
 from excelforge.utils.ids import compute_runtime_fingerprint
 from excelforge.utils.timestamps import utc_now_rfc3339
@@ -59,11 +60,15 @@ class ExcelWorker:
         self._warmup_error: Exception | None = None
         self._excel_version: str | None = None
         self._worker_manager = ExcelWorkerManager()
+        self._metrics = WorkerMetrics()
 
     @property
     def state(self) -> str:
-        with self._lock:
-            return self._state
+        return self._state
+
+    @property
+    def metrics(self) -> WorkerMetrics:
+        return self._metrics
 
     @property
     def queue_length(self) -> int:
@@ -88,6 +93,18 @@ class ExcelWorker:
     @property
     def last_rebuild_at(self) -> str | None:
         return self._last_rebuild_at
+
+    def get_metrics(self) -> dict:
+        return self._metrics.to_dict()
+
+    def record_operation(self, high_risk: bool = False) -> None:
+        self._metrics.record_operation(high_risk)
+
+    def record_exception(self, exc_type: str) -> None:
+        self._metrics.record_exception(exc_type)
+
+    def get_excel_pid(self) -> int | None:
+        return self._metrics.excel_pid
 
     def start(self) -> None:
         with self._lock:
@@ -196,11 +213,15 @@ class ExcelWorker:
                     pass
 
     def _execute_task(self, task: WorkerTask[T]) -> T:
+        high_risk = task.allow_rebuild
+        self.record_operation(high_risk=high_risk)
+
         if task.requires_excel:
             if self._config.excel.health_ping_enabled and not self._health_ping():
                 self._set_state("degraded")
                 recovered = self._recover_excel_instance()
                 if not recovered:
+                    self.record_exception("EXCEL_UNAVAILABLE")
                     raise ExcelForgeError(
                         ErrorCode.E500_EXCEL_UNAVAILABLE,
                         "Excel instance unavailable after rebuild attempts",
@@ -218,6 +239,7 @@ class ExcelWorker:
         try:
             return run_with_com_retry(lambda: task.func(self._context))
         except ExcelForgeError as exc:
+            self.record_exception(exc.code.value if exc.code else type(exc).__name__)
             if exc.code != ErrorCode.E500_COM_DISCONNECTED:
                 raise
 
@@ -241,20 +263,39 @@ class ExcelWorker:
         self._last_health_ping = utc_now_rfc3339()
         if not self._context.app_manager.ready:
             try:
-                self._context.app_manager.ensure_app()
+                app = self._context.app_manager.ensure_app()
+                self._update_excel_pid(app)
                 return True
             except Exception:
                 return False
-        return self._context.app_manager.ping()
+        if self._context.app_manager.ping():
+            app = self._context.app_manager._app
+            if app is not None:
+                self._update_excel_pid(app)
+            return True
+        return False
+
+    def _update_excel_pid(self, app: Any) -> None:
+        try:
+            from excelforge.runtime.com_utils import get_excel_pid
+            pid = get_excel_pid(app)
+            if pid and pid != self._metrics.excel_pid:
+                self._metrics.excel_pid = pid
+        except Exception:
+            pass
 
     def _recover_excel_instance(self) -> bool:
         def _create_new_app():
+            old_pid = self._metrics.excel_pid
             self._context.app_manager._app = None
             app = self._context.app_manager.ensure_app()
             try:
                 from excelforge.runtime.com_utils import get_excel_pid
                 pid = get_excel_pid(app)
                 self._worker_manager.register_worker_pid(pid)
+                if old_pid and pid and old_pid != pid:
+                    self._metrics.last_pid_change_reason = "stale_rebuild"
+                self._metrics.excel_pid = pid
             except Exception:
                 pass
             return app
@@ -289,6 +330,7 @@ class ExcelWorker:
                 continue
             self._rebuild_count += 1
             self._last_rebuild_at = utc_now_rfc3339()
+            self._metrics.last_recycle_reason = "rebuild_attempt"
             self._hard_stopped = False
             self._set_state("running")
             self._ready_event.set()
@@ -318,6 +360,14 @@ class ExcelWorker:
                     app = ctx.app_manager.ensure_app()
                     self._excel_version = app.Version
                     self._warmup_error = None
+                    try:
+                        from excelforge.runtime.com_utils import get_excel_pid
+                        pid = get_excel_pid(app)
+                        if pid:
+                            self._worker_manager.register_worker_pid(pid)
+                            self._metrics.excel_pid = pid
+                    except Exception:
+                        pass
                 except Exception as exc:
                     self._warmup_error = exc
                 finally:
@@ -357,3 +407,91 @@ class ExcelWorker:
     def mark_unhealthy(self, reason: str) -> None:
         self._set_state("degraded")
         self._recover_excel_instance()
+
+    def rebuild(self, reopen_workbooks: bool = False, reason: str = "manual_rebuild") -> dict:
+        import logging
+        logger = logging.getLogger(__name__)
+
+        old_pid = self._metrics.excel_pid
+        open_workbook_paths: list[str] = []
+        for handle in self._context.registry.list_items():
+            open_workbook_paths.append(handle.file_path)
+
+        if reopen_workbooks and open_workbook_paths:
+            logger.info(f"[ExcelWorker] rebuild will reopen {len(open_workbook_paths)} workbook(s) after rebuild")
+        else:
+            logger.info(f"[ExcelWorker] rebuild will NOT auto-reopen workbooks (reopen_workbooks={reopen_workbooks})")
+
+        self._metrics.last_recycle_reason = reason
+        self._metrics.state = WorkerHealth.RECYCLING
+
+        self._invalidate_excel_session()
+
+        try:
+            self._context.app_manager.close()
+        except Exception as e:
+            logger.warning(f"[ExcelWorker] Error closing app during rebuild: {e}")
+
+        self._invalidate_excel_session()
+
+        def _create_new_app():
+            old_pid = self._metrics.excel_pid
+            self._context.app_manager._app = None
+            app = self._context.app_manager.ensure_app()
+            try:
+                from excelforge.runtime.com_utils import get_excel_pid
+                pid = get_excel_pid(app)
+                self._worker_manager.register_worker_pid(pid)
+                if old_pid and pid and old_pid != pid:
+                    self._metrics.last_pid_change_reason = reason
+                self._metrics.excel_pid = pid
+            except Exception:
+                pass
+            return app
+
+        def _pre_rebuild_hook():
+            self._context.registry.clear_all()
+            self._worker_manager.clear_registration()
+            logger.warning(f"[ExcelWorker] === REBUILD START (rebuild) === reason={reason}")
+
+        self._warmup_error = None
+        self._ready_event.clear()
+        attempts = int(self._config.excel.max_rebuild_attempts)
+
+        for attempt in range(attempts):
+            try:
+                app = self._worker_manager.rebuild_worker(
+                    create_fn=_create_new_app,
+                    pre_rebuild_hook=_pre_rebuild_hook
+                )
+                self._excel_version = app.Version
+                self._warmup_error = None
+            except Exception as exc:
+                self._warmup_error = exc
+                logger.error(f"[ExcelWorker] Rebuild attempt {attempt + 1} failed: {exc}")
+                continue
+            self._rebuild_count += 1
+            self._last_rebuild_at = utc_now_rfc3339()
+            self._metrics.last_recycle_reason = reason
+            self._metrics.state = WorkerHealth.HEALTHY
+            self._hard_stopped = False
+            self._set_state("running")
+            self._ready_event.set()
+            logger.info(f"[ExcelWorker] === REBUILD COMPLETE === count={self._rebuild_count}, reason={reason}")
+            return {
+                "success": True,
+                "rebuild_count": self._rebuild_count,
+                "excel_pid": self._metrics.excel_pid,
+                "open_workbook_paths": open_workbook_paths if reopen_workbooks else [],
+                "reopened": reopen_workbooks,
+            }
+
+        self._hard_stopped = True
+        self._set_state("stopped")
+        self._metrics.state = WorkerHealth.FAILED
+        self._ready_event.set()
+        logger.error("[ExcelWorker] All rebuild attempts failed")
+        return {
+            "success": False,
+            "error": "All rebuild attempts failed",
+        }

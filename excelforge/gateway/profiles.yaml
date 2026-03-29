@@ -1,12 +1,9 @@
-﻿profiles:
+profiles:
   basic_edit:
     description: "基础编辑 - 只加载 workbook / sheet / range / names / server"
     bundles:
       - foundation
       - edit
-    # 2026-03-29: tool_budget 从 30 调整为 35
-    # 原因: foundation(12) + edit(19) = 31 个工具，原预算 30 已超限
-    # 详见设计文档V2.2 §11.5.1
     tool_budget: 35
     risk_level: low
 
@@ -16,7 +13,7 @@
       - foundation
       - edit
       - calc_format
-    tool_budget: 40
+    tool_budget: 45
     risk_level: low
 
   automation:
@@ -25,7 +22,7 @@
       - foundation
       - automation
       - recovery
-    tool_budget: 20
+    tool_budget: 30
     risk_level: medium
 
   data_workflow:
@@ -34,7 +31,7 @@
       - foundation
       - data
       - analysis
-    tool_budget: 15
+    tool_budget: 20
     risk_level: medium
 
   reporting:
@@ -43,7 +40,7 @@
       - foundation
       - report
       - analysis
-    tool_budget: 15
+    tool_budget: 20
     risk_level: medium
 
   all:
@@ -60,3 +57,21 @@
     tool_budget: null
     risk_level: high
     is_development: true
+
+  vba_first:
+    description: "调试测试专用 - VBA/Recovery核心工具"
+    bundles:
+      - foundation
+      - automation
+      - recovery
+    tool_budget: 30
+    risk_level: medium
+
+  trea_debug:
+    description: "TreaAI调试专用 - Format/Recovery工具"
+    bundles:
+      - foundation
+      - calc_format
+      - recovery
+    tool_budget: 35
+    risk_level: medium

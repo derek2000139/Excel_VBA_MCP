@@ -46,8 +46,8 @@ class RollbackService:
             if handle is None:
                 raise ExcelForgeError(ErrorCode.E404_WORKBOOK_NOT_OPEN, f"Workbook not open: {workbook_id}")
 
-            snapshots = self._snapshot_service.list_snapshots(workbook_id=workbook_id, limit=100, offset=0)
-            backups = self._backup_service.list_backups(
+            _, snapshot_items = self._snapshot_repo.list_snapshots(workbook_id=workbook_id, limit=100, offset=0)
+            backup_result = self._backup_service.list_backups(
                 workbook_id=workbook_id,
                 file_path=None,
                 limit=100,
@@ -55,7 +55,7 @@ class RollbackService:
             )
 
             all_ops: list[dict[str, Any]] = []
-            for item in snapshots["items"]:
+            for item in snapshot_items:
                 all_ops.append(
                     {
                         "type": "snapshot",
@@ -64,7 +64,7 @@ class RollbackService:
                         "source_tool": item.get("source_tool", ""),
                     }
                 )
-            for item in backups["items"]:
+            for item in backup_result["items"]:
                 all_ops.append(
                     {
                         "type": "backup",

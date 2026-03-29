@@ -106,22 +106,41 @@ class VbaApi:
             default_workbook_id=workbook_id,
         )
 
-    def execute_inline(self, params: dict[str, Any], actor_id: str) -> dict[str, Any]:
+    def import_module(self, params: dict[str, Any], actor_id: str) -> dict[str, Any]:
         workbook_id = str(params.get("workbook_id", ""))
-        code = str(params.get("code", ""))
-        procedure_name = str(params.get("procedure_name", "Main"))
-        timeout_seconds = int(params.get("timeout_seconds", self._ctx.services.config.vba_policy.execution_timeout_seconds))
+        file_path = str(params.get("file_path", ""))
+        module_name = str(params.get("module_name", "")) if params.get("module_name") else None
+        overwrite = bool(params.get("overwrite", False))
         return self._ctx.run_operation(
-            method_name="vba.execute_inline",
+            method_name="vba.import_module",
             actor_id=actor_id,
             client_request_id=params.get("client_request_id"),
-            operation_fn=lambda: self._ctx.services.vba_service.execute_inline(
+            operation_fn=lambda: self._ctx.services.vba_service.import_module(
                 workbook_id=workbook_id,
-                code=code,
-                procedure_name=procedure_name,
-                timeout_seconds=timeout_seconds,
+                file_path=file_path,
+                module_name=module_name,
+                overwrite=overwrite,
             ),
-            args_summary={"workbook_id": workbook_id, "procedure_name": procedure_name},
+            args_summary={"workbook_id": workbook_id, "file_path": file_path, "module_name": module_name},
+            default_workbook_id=workbook_id,
+        )
+
+    def export_module(self, params: dict[str, Any], actor_id: str) -> dict[str, Any]:
+        workbook_id = str(params.get("workbook_id", ""))
+        module_name = str(params.get("module_name", ""))
+        file_path = str(params.get("file_path", ""))
+        overwrite = bool(params.get("overwrite", False))
+        return self._ctx.run_operation(
+            method_name="vba.export_module",
+            actor_id=actor_id,
+            client_request_id=params.get("client_request_id"),
+            operation_fn=lambda: self._ctx.services.vba_service.export_module(
+                workbook_id=workbook_id,
+                module_name=module_name,
+                file_path=file_path,
+                overwrite=overwrite,
+            ),
+            args_summary={"workbook_id": workbook_id, "module_name": module_name, "file_path": file_path},
             default_workbook_id=workbook_id,
         )
 

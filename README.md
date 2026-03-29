@@ -1,8 +1,9 @@
 # ExcelForge
 
-ExcelForge v2.2 现在采用单一 MCP Host 入口：`excel-mcp`。
+ExcelForge v2.3 采用单一 MCP Host 入口：`excel-mcp`。
 
 项目不再推荐、也不再保留多 MCP 并行启动方式。所有能力都通过同一个 Host 暴露，按 `profile` 或 `bundle` 做装配：
+
 - 一个 Host
 - 一个共享 Runtime
 - 一个共享 ExcelWorker / WorkbookRegistry
@@ -24,14 +25,14 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile basic
 
 ### 3. 常用 Profile
 
-| Profile | 适用场景 | 工具数 | 启用的 Bundle | 包含的工具域 |
-| --- | --- | --- | --- | --- |
-| `basic_edit` | 日常编辑（推荐新手） | 31 | foundation + edit | server / workbook / names / sheet / range |
-| `calc_format` | 公式与格式处理 | 42 | foundation + edit + calc_format | 上述 + formula / format |
-| `automation` | VBA 自动化与恢复 | 36 | foundation + automation + recovery | server / workbook / names / vba / recovery |
-| `data_workflow` | Power Query / 数据流 | 28 | foundation + data + analysis | server / workbook / names / pq / analysis |
-| `reporting` | 报表与分析 | 28 | foundation + report + analysis | server / workbook / names / chart / pivot / model / audit |
-| `all` | 全量开发调试 | **64** | 全部 9 个 bundle | 全部 12 个域 |
+| Profile         | <br /> | 适用场景              | 工具数    | 启用的 Bundle                         | 包含的工具域                                                    |
+| --------------- | :----- | ----------------- | ------ | ---------------------------------- | --------------------------------------------------------- |
+| `basic_edit`    | <br /> | 日常编辑（推荐新手）        | 31     | foundation + edit                  | server / workbook / names / sheet / range                 |
+| `calc_format`   | <br /> | 公式与格式处理           | 42     | foundation + edit + calc\_format   | 上述 + formula / format                                     |
+| `automation`    | <br /> | VBA 自动化与恢复        | 36     | foundation + automation + recovery | server / workbook / names / vba / recovery                |
+| `data_workflow` | <br /> | Power Query / 数据流 | 28     | foundation + data + analysis       | server / workbook / names / pq / analysis                 |
+| `reporting`     | <br /> | 报表与分析             | 28     | foundation + report + analysis     | server / workbook / names / chart / pivot / model / audit |
+| `all`           | <br /> | 全量开发调试            | **64** | 全部 9 个 bundle                      | 全部 12 个域                                                  |
 
 > **如何选择 Profile？**
 >
@@ -46,20 +47,20 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile basic
 
 #### 各 Profile 工具域详细对照
 
-| 工具域 | basic_edit | calc_format | automation | data_workflow | reporting | all |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: |
-| server (2) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| workbook (6) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| names (4) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| sheet (8) | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| range (11) | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| formula (4) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| format (7) | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| vba (8) | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
-| recovery (8) | ❌ | ❌ | ✅ | ❌ | ❌ | ✅ |
-| analysis (1) | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| pq (5) | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| chart/pivot/model | ❌ | ❌ | ❌ | ❌ | ⚠️ 空 | ⚠️ 空 |
+| 工具域               | basic\_edit | calc\_format | automation | data\_workflow | reporting |  all |
+| ----------------- | :---------: | :----------: | :--------: | :------------: | :-------: | :--: |
+| server (2)        |      ✅      |       ✅      |      ✅     |        ✅       |     ✅     |   ✅  |
+| workbook (6)      |      ✅      |       ✅      |      ✅     |        ✅       |     ✅     |   ✅  |
+| names (4)         |      ✅      |       ✅      |      ✅     |        ✅       |     ✅     |   ✅  |
+| sheet (8)         |      ✅      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
+| range (11)        |      ✅      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
+| formula (4)       |      ❌      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
+| format (7)        |      ❌      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
+| vba (8)           |      ❌      |       ❌      |      ✅     |        ❌       |     ❌     |   ✅  |
+| recovery (8)      |      ❌      |       ❌      |      ✅     |        ❌       |     ❌     |   ✅  |
+| analysis (1)      |      ❌      |       ❌      |      ❌     |        ✅       |     ✅     |   ✅  |
+| pq (5)            |      ❌      |       ❌      |      ❌     |        ✅       |     ❌     |   ✅  |
+| chart/pivot/model |      ❌      |       ❌      |      ❌     |        ❌       |    ⚠️ 空   | ⚠️ 空 |
 
 ### 4. 如果只想单独装备某些功能
 
@@ -79,6 +80,7 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile all -
 ```
 
 对应的客户端示例见：
+
 - `mcp.example.json`
 - `examples/mcp.basic_edit.example.json`
 - `examples/mcp.automation.example.json`
@@ -88,12 +90,14 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile all -
 ## 配置文件
 
 必须保留：
+
 - `excel-mcp.yaml`：统一 Host 配置
 - `runtime-config.yaml`：Runtime 配置
 - `excelforge/gateway/profiles.yaml`：Profile 定义
 - `excelforge/gateway/bundles.yaml`：Bundle 定义
 
 已移除：
+
 - `excel-core-mcp.yaml`
 - `excel-vba-mcp.yaml`
 - `excel-recovery-mcp.yaml`
@@ -158,12 +162,14 @@ uv run python -m excelforge.runtime --config runtime-config.yaml
 ## 日志文件
 
 ExcelForge 会将日志写入 `~/.excelforge/logs/excelforge_YYYYMMDD.log`，包含：
+
 - Gateway 和 Runtime 的所有操作日志
 - 工具调用记录（TOOL CALL / TOOL OK / TOOL FAIL）
 - Excel 进程创建和销毁记录
 - 错误和警告信息
 
 查看日志：
+
 ```powershell
 # Windows
 Get-Content "$env:USERPROFILE\.excelforge\logs\excelforge_20260329.log" | Select-Object -Last 50
@@ -196,9 +202,191 @@ MCP Client
 
 - `v2.1`：稳定共享 Runtime 的 ready / warmup / health / timeout 基线
 - `v2.2`：在 `v2.1` 基线上收敛为单一 Host，并引入 profile / bundle 装配
+- `v2.3`：Worker 治理能力产品化、配置化、可观测化
+
+### V2.3 新特性：Worker 健康状态
+
+V2.3 引入了完整的 Worker 健康状态机，用于治理 Excel 实例生命周期。
+
+#### Worker 健康状态枚举
+
+| 状态          | 说明                        |
+| ----------- | ------------------------- |
+| `HEALTHY`   | Worker 正常运行，受控 Excel 实例健康 |
+| `DEGRADED`  | Worker 降级中，正在执行恢复         |
+| `STALE`     | 受控 Excel 实例已失效            |
+| `RECYCLING` | Worker 正在回收/重建中           |
+| `FAILED`    | Worker 处于失败状态             |
+
+#### server.health 返回字段
+
+`server.health` 接口新增完整 Worker 状态返回：
+
+```json
+{
+  "excel": {
+    "ready": true,
+    "excel_pid": 12345,
+    "version": "16.0"
+  },
+  "worker": {
+    "state": "HEALTHY",
+    "excel_pid": 12345,
+    "open_workbooks": 2,
+    "operation_count": 150,
+    "high_risk_operation_count": 3,
+    "exception_count": 0,
+    "uptime_seconds": 3600.5,
+    "last_exception_type": null,
+    "last_recycle_reason": null,
+    "last_pid_change_reason": null
+  }
+}
+```
+
+#### 单受控实例约束
+
+V2.3 强化了**单受控实例约束**：
+
+- 单个 Runtime 内默认只允许存在 **1 个受控 Excel Application 实例**
+- hidden → visible 状态切换必须保持同一 PID
+- `ensure_app()` 在实例有效时必须直接复用，不允许创建第二个实例
+
+#### PID 变化原因
+
+当 `excel_pid` 发生变化时，`last_pid_change_reason` 会记录原因：
+
+| 原因值               | 说明               |
+| ----------------- | ---------------- |
+| `stale_rebuild`   | 因实例失效触发的自动重建     |
+| `worker_recycle`  | 手动触发的 Worker 回收  |
+| `runtime_restart` | Runtime 重启后的首次创建 |
+
+#### rebuild() 默认行为
+
+`rebuild()` 方法（用于手动回收 Excel 实例）默认**不自动重新打开工作簿**：
+
+- 记录当前打开的工作簿路径
+- 退出当前 Excel 实例
+- 重建 COM 对象
+- 下次请求时需要用户显式调用 `open_file`
+
+如需自动 reopen，可在调用时传入 `reopen_workbooks=True`（不推荐，默认关闭）。
+
+### --restart-runtime 策略推荐
+
+| 场景   | 推荐策略                         | 说明                      |
+| ---- | ---------------------------- | ----------------------- |
+| 开发调试 | `--restart-runtime always`   | 每次启动都重启 Runtime，确保新代码生效 |
+| 生产环境 | `--restart-runtime if-stale` | 仅在 Runtime 过期时重启，提升复用率  |
+
+## Trae AI 工具截断问题与解决对策
+
+### 问题现象
+
+使用 Trae AI 等 MCP 客户端时，可能会遇到以下问题：
+
+- 某些工具（如 VBA 工具）无法识别或调用
+- 明明定义了工具，但调用时报错 "Tool is not available"
+- `server.health` 显示正常，但实际调用失败
+
+### 问题根因
+
+**MCP 客户端存在工具数量限制**，当 profile 包含的工具数量超过限制时，工具列表会被截断。
+
+例如 `all` profile 有 64 个工具，如果客户端限制为 40 个，则后半部分工具（如 VBA、recovery 等）会被截断，导致无法调用。
+
+### 验证方法
+
+1. 打开 Trae AI 的工具列表
+2. 搜索 `vba.` 或 `backup.` 等关键字
+3. 如果显示"未找到工具"，说明该工具被截断了
+
+或者通过 Python 脚本检查 profile 实际加载的工具：
+
+```python
+from excelforge.gateway.profile_resolver import ProfileResolver, BundleRegistry
+
+resolver = ProfileResolver()
+registry = BundleRegistry()
+info = resolver.get_profile_info('all')
+tools = registry.get_all_tools(info['bundles'])
+print(f'Total tools in all profile: {len(tools)}')
+for t in sorted(tools):
+    print(f'  {t}')
+```
+
+### 解决对策
+
+#### 方案一：创建自定义 Profile（推荐）
+
+修改 `excelforge/gateway/profiles.yaml`，将需要的工具 bundle 放在前面，并设置合理的 `tool_budget`：
+
+```yaml
+profiles:
+  # ... 其他 profile ...
+
+  # 调试测试专用 - VBA/Recovery 核心工具
+  vba_first:
+    description: "调试测试专用 - VBA/Recovery核心工具"
+    bundles:
+      - foundation     # 12工具 (server/workbook/names) ← 放最前面
+      - automation     # 8工具 (VBA) ← 优先保证 VBA 可用
+      - recovery       # 8工具 (rollback/snapshot/backups)
+    tool_budget: 30    # 根据实际需要调整
+    risk_level: medium
+```
+
+然后在 Trae AI 配置中使用 `--profile vba_first`。
+
+#### 方案二：调整 tool\_budget
+
+如果某个 profile 部分工具被截断，可以降低 `tool_budget` 使其刚好包含目标工具：
+
+```yaml
+automation:
+  description: "自动化 - VBA 与恢复工具"
+  bundles:
+    - foundation
+    - automation
+    - recovery
+  tool_budget: 28   # foundation(12) + automation(8) + recovery(8) = 28
+```
+
+#### 方案三：使用 bundle 开关
+
+如果只想在现有 profile 基础上增加特定工具：
+
+```bash
+uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile basic_edit --enable-bundle automation
+```
+
+这会在 `basic_edit` 基础上额外启用 `automation` bundle。
+
+### 验证修复
+
+修改配置后，重启 Trae AI MCP 服务，然后：
+
+1. 检查工具列表是否包含目标工具（如 `vba.inspect_project`）
+2. 调用 `vba.execute` 执行一个简单 VBA 宏测试
+
+```python
+# 测试 VBA 是否可用
+vba.inspect_project(workbook_id="your_workbook_id")
+# 如果返回 VBAProject 信息，说明工具已加载成功
+```
+
+### Profile 工具数量参考
+
+| Profile     | 工具数  | tool\_budget | 说明             |
+| ----------- | ---- | ------------ | -------------- |
+| basic\_edit | 31   | 35           | 基础编辑够用         |
+| automation  | 36   | 40           | VBA + Recovery |
+| vba\_first  | \~28 | 30           | 调试专用           |
 
 ## 文档
 
 - `设计文档V2.1 Runtime 启动预热与超时治理.md`
 - `设计文档V2.2  Profile 与 Bundle 工具装配优化（修订版）.md`
 - `V2.X开发记录文档.md`
+

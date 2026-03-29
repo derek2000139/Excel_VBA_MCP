@@ -44,6 +44,9 @@ class ServerApi:
         scope = self._get_runtime_scope()
         instance_name = self._get_runtime_instance_name()
 
+        worker_metrics = self._ctx.services.worker.get_metrics()
+        open_workbooks = self._ctx.services.worker.context.registry.count()
+
         return {
             "success": True,
             "code": "OK",
@@ -58,10 +61,12 @@ class ServerApi:
                 "excel": {
                     "ready": excel_ready,
                     "version": ready_status["version"],
+                    "excel_pid": worker_metrics.get("excel_pid"),
                     "warmup_started": ready_status["warmup_started"],
                     "warmup_error": ready_status["warmup_error"],
                 },
-                "open_workbooks": self._ctx.services.worker.context.registry.count(),
+                "worker": worker_metrics,
+                "open_workbooks": open_workbooks,
             },
             "warnings": warnings,
             "meta": {},

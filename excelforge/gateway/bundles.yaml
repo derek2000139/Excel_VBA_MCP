@@ -1,4 +1,4 @@
-﻿bundles:
+bundles:
   foundation:
     description: "所有 profile 的基础包 - server / workbook / names"
     domains:
@@ -156,7 +156,8 @@ domains:
       - vba.sync_module
       - vba.remove_module
       - vba.execute
-      - vba.execute_inline
+      - vba.import_module
+      - vba.export_module
       - vba.compile
     maturity: stable
     risk_level: medium

@@ -71,7 +71,8 @@ TOOL_MANIFEST_MAP: dict[str, str] = {
     "vba.sync_module": "vba.sync_module",
     "vba.remove_module": "vba.remove_module",
     "vba.execute": "vba.execute_macro",
-    "vba.execute_inline": "vba.execute_inline",
+    "vba.import_module": "vba.import_module",
+    "vba.export_module": "vba.export_module",
     "vba.compile": "vba.compile",
     "rollback.manage": "recovery.undo_last",
     "rollback.preview_snapshot": "recovery.preview_snapshot",
@@ -305,35 +306,43 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
         "sheet_name": {**_STR, "description": "工作表名称"},
         "range": {**_STR, "description": "单元格区域"},
-        "style": {"type": "object", "description": "样式对象，包含 number_format 等属性"},
+        "number_format": {**_STR, "description": "数字格式（如 '0.00', 'yyyy-mm-dd'）"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "format.set_font": ("设置字体", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
         "sheet_name": {**_STR, "description": "工作表名称"},
         "range": {**_STR, "description": "单元格区域"},
-        "style": {"type": "object", "description": "样式对象，包含 name/size/bold/italic/color 等属性"},
+        "name": {**_STR, "description": "字体名称（如 'Arial', '宋体'）"},
+        "size": {**_INT, "description": "字体大小"},
+        "bold": {**_BOOL, "description": "是否加粗", "default": False},
+        "italic": {**_BOOL, "description": "是否斜体", "default": False},
+        "font_color": {**_STR, "description": "字体颜色（如 'FF0000' 红色）", "default": None},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "format.set_fill": ("设置填充色", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
         "sheet_name": {**_STR, "description": "工作表名称"},
         "range": {**_STR, "description": "单元格区域"},
-        "style": {"type": "object", "description": "样式对象，包含 fill_color 等属性"},
+        "fill_color": {**_STR, "description": "填充颜色（如 'FFFF00' 黄色）"},
+        "pattern": {**_STR, "description": "填充图案（如 'solid', 'gray75'）", "default": "solid"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "format.set_border": ("设置边框", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
         "sheet_name": {**_STR, "description": "工作表名称"},
         "range": {**_STR, "description": "单元格区域"},
-        "style": {"type": "object", "description": "样式对象，包含 border 相关属性"},
+        "border_style": {**_STR, "description": "边框样式（如 'thin', 'medium', 'thick'）"},
+        "border_type": {**_STR, "description": "边框类型: all/outside/inside/left/right/top/bottom", "default": "all"},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "format.set_alignment": ("设置对齐方式", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
         "sheet_name": {**_STR, "description": "工作表名称"},
         "range": {**_STR, "description": "单元格区域"},
-        "style": {"type": "object", "description": "样式对象，包含 horizontal/vertical/wrap_text 等属性"},
+        "horizontal": {**_STR, "description": "水平对齐: left/center/right/general", "default": None},
+        "vertical": {**_STR, "description": "垂直对齐: top/center/bottom", "default": None},
+        "wrap_text": {**_BOOL, "description": "是否自动换行", "default": False},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
     "format.set_column_width": ("自动调整列宽", {
@@ -416,12 +425,19 @@ TOOL_PARAM_SCHEMA: dict[str, tuple[str, dict[str, dict]]] = {
         "timeout_seconds": {**_INT, "description": "超时秒数", "default": 30},
         "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
     }),
-    "vba.execute_inline": ("内联执行 VBA 代码", {
+    "vba.import_module": ("导入 VBA 模块(.bas/.cls)", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
-        "code": {**_STR, "description": "VBA 代码内容"},
-        "procedure_name": {**_STR, "description": "过程名称", "default": "Main"},
-        "timeout_seconds": {**_INT, "description": "超时秒数", "default": 30},
-        "client_request_id": {"type": "string", "description": "客户端请求 ID（可选）", "default": None},
+        "file_path": {**_STR, "description": "要导入的文件路径(.bas或.cls)"},
+        "module_name": {**_STR, "description": "模块名称(可选，默认从文件推断)", "default": None},
+        "overwrite": {**_BOOL, "description": "如果模块已存在是否覆盖", "default": False},
+        "client_request_id": {**_STR, "description": "客户端请求 ID（可选）", "default": None},
+    }),
+    "vba.export_module": ("导出 VBA 模块到文件", {
+        "workbook_id": {**_STR, "description": "工作簿 ID"},
+        "module_name": {**_STR, "description": "要导出的模块名称"},
+        "file_path": {**_STR, "description": "导出目标文件路径(.bas或.cls)"},
+        "overwrite": {**_BOOL, "description": "如果文件已存在是否覆盖", "default": False},
+        "client_request_id": {**_STR, "description": "客户端请求 ID（可选）", "default": None},
     }),
     "vba.compile": ("编译 VBA 工程", {
         "workbook_id": {**_STR, "description": "工作簿 ID"},
@@ -897,8 +913,17 @@ def register_tools_for_profile(
     resolved_bundles = bundle_registry.resolve_bundles(all_bundles)
     enabled_tools = bundle_registry.get_all_tools(resolved_bundles)
 
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("[Host] Profile=%s", profile_name)
+    logger.info("[Host] Bundles=%s", all_bundles)
+    logger.info("[Host] Resolved bundles=%s", resolved_bundles)
+    logger.info("[Host] Resolved tools (%d)=%s", len(enabled_tools), enabled_tools)
+    logger.info("[Host] Resolved VBA tools=%s", [t for t in enabled_tools if t.startswith("vba.")])
+
     check_tool_budget(len(enabled_tools), profile_info)
 
+    registered_vba_tools = []
     for tool_name in enabled_tools:
         runtime_method = TOOL_MANIFEST_MAP.get(tool_name, tool_name)
         schema_entry = TOOL_PARAM_SCHEMA.get(tool_name)
@@ -913,6 +938,10 @@ def register_tools_for_profile(
             description=desc,
             annotations=ToolAnnotations(readOnlyHint=False),
         )(handler)
+        if tool_name.startswith("vba."):
+            registered_vba_tools.append(tool_name)
+
+    logger.info("[Host] Actually registered VBA tools=%s", registered_vba_tools)
 
 
 def main(argv: list[str] | None = None) -> int:

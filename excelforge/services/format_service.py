@@ -9,7 +9,7 @@ from excelforge.models.format_models import StyleModel
 from excelforge.runtime.excel_worker import ExcelWorker
 from excelforge.utils.address_parser import column_to_index, index_to_column, parse_range
 
-HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
+HEX_COLOR_RE = re.compile(r"^[0-9A-Fa-f]{6}$")
 COLUMN_SPAN_RE = re.compile(r"^([A-Za-z]{1,3})(?::([A-Za-z]{1,3}))?$")
 
 HORIZONTAL_ALIGNMENT_MAP: dict[str, int] = {
@@ -21,6 +21,7 @@ HORIZONTAL_ALIGNMENT_MAP: dict[str, int] = {
 VERTICAL_ALIGNMENT_MAP: dict[str, int] = {
     "top": -4160,
     "center": -4108,
+    "middle": -4108,
     "bottom": -4107,
 }
 BORDER_WEIGHT_MAP: dict[str, int] = {
@@ -178,9 +179,9 @@ class FormatService:
 
     @staticmethod
     def _hex_to_excel_color(hex_color: str) -> int:
-        if not HEX_COLOR_RE.fullmatch(hex_color):
-            raise ExcelForgeError(ErrorCode.E400_INVALID_COLOR, f"Invalid color value: {hex_color}")
         raw = hex_color.lstrip("#")
+        if not HEX_COLOR_RE.fullmatch(raw):
+            raise ExcelForgeError(ErrorCode.E400_INVALID_COLOR, f"Invalid color value: {hex_color}")
         r = int(raw[0:2], 16)
         g = int(raw[2:4], 16)
         b = int(raw[4:6], 16)

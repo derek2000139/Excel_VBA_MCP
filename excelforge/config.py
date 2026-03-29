@@ -125,6 +125,19 @@ class ToolsConfig(BaseModel):
     groups: ToolsGroupsConfig = Field(default_factory=ToolsGroupsConfig)
 
 
+class WorkerConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    health_check_on_operation: bool = True
+    auto_prune_stale_handles: bool = True
+    recycle_on_no_workbooks: bool = True
+    recycle_auto_reopen: bool = False
+    max_operation_count: int = Field(default=500, ge=1)
+    max_high_risk_operations: int = Field(default=50, ge=1)
+    max_exceptions: int = Field(default=10, ge=1)
+    max_uptime_seconds: int = Field(default=14400, ge=60)
+
+
 class AppConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -138,6 +151,7 @@ class AppConfig(BaseModel):
     retention: RetentionConfig
     vba_policy: VbaPolicyConfig = Field(default_factory=VbaPolicyConfig)
     tools: ToolsConfig = Field(default_factory=ToolsConfig)
+    worker: WorkerConfig = Field(default_factory=WorkerConfig)
 
     @property
     def allowed_roots(self) -> list[Path]:

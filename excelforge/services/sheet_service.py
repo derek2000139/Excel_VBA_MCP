@@ -407,29 +407,32 @@ class SheetService:
                 raise ExcelForgeError(ErrorCode.E404_SHEET_NOT_FOUND, f"Sheet not found: {sheet_name}") from exc
 
             if normalized_action == "enable":
-                filter_range = ws.AutoFilterMode
-                if not filter_range and range_address:
+                if range_address:
                     ws.Range(range_address).AutoFilter()
-                elif range_address:
-                    ws.Range(range_address).AutoFilter()
-                elif not filter_range:
+                else:
                     used = ws.UsedRange
-                    used.Address()
-                    ws.AutoFilterMode = True
+                    ws.Range(used.Address).AutoFilter()
 
                 if filters:
-                    af = ws.AutoFilter
-                    for f in filters[:5]:
-                        col_idx = self._column_letter_to_index(f["column"])
-                        op_val = self._operator_to_excel(f["operator"], f.get("value"), f.get("value2"))
-                        af.Filters.Add(col_idx, op_val[0], op_val[1], op_val[2], op_val[3])
+                    # 使用 Range.AutoFilter 直接设置筛选条件
+                    # 只支持单个筛选条件，通过指定列和条件值
+                    f = filters[0]
+                    col_idx = self._column_letter_to_index(f["column"])
+                    op_val = self._operator_to_excel(f["operator"], f.get("value"), f.get("value2"))
+                    
+                    # 获取目标列的范围（整列）
+                    col_letter = self._column_index_to_letter(col_idx)
+                    col_range = ws.Range(f"{col_letter}:{col_letter}")
+                    
+                    # 对该列应用筛选
+                    col_range.AutoFilter(Field=1, Criteria1=op_val[1])
             else:
                 ws.AutoFilterMode = False
 
             af = ws.AutoFilter
             applied: list[dict] = []
             try:
-                if af.Filters.Count > 0:
+                if af is not None and af.Filters.Count > 0:
                     for i in range(1, af.Filters.Count + 1):
                         f = af.Filters(i)
                         applied.append({

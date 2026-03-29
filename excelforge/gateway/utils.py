@@ -28,14 +28,23 @@ def gateway_error_envelope(tool_name: str, code: ErrorCode | str, message: str, 
 
 
 def call_runtime(runtime_client, *, tool_name: str, method: str, params: dict[str, Any]) -> dict[str, Any]:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("[Gateway] Calling tool=%s method=%s params=%s", tool_name, method, params)
+
     started = time.perf_counter()
     try:
-        return runtime_client.call(method, params)
+        result = runtime_client.call(method, params)
+        duration_ms = int((time.perf_counter() - started) * 1000)
+        logger.info("[Gateway] tool=%s completed in %dms success=%s", tool_name, duration_ms, result.get("success") if isinstance(result, dict) else "unknown")
+        return result
     except ExcelForgeError as exc:
         duration_ms = int((time.perf_counter() - started) * 1000)
+        logger.error("[Gateway] tool=%s failed: %s", tool_name, exc.message)
         return gateway_error_envelope(tool_name=tool_name, code=exc.code, message=exc.message, duration_ms=duration_ms)
     except Exception as exc:  # noqa: BLE001
         duration_ms = int((time.perf_counter() - started) * 1000)
+        logger.error("[Gateway] tool=%s exception: %s", tool_name, exc)
         return gateway_error_envelope(
             tool_name=tool_name,
             code=ErrorCode.E500_INTERNAL,

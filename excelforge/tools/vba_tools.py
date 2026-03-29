@@ -6,13 +6,14 @@ from mcp.server.fastmcp import FastMCP
 
 from excelforge.models.vba_models import (
     VbaCompileRequest,
-    VbaExecuteInlineRequest,
     VbaExecuteMacroRequest,
     VbaGetModuleCodeRequest,
+    VbaImportModuleRequest,
     VbaInspectProjectRequest,
     VbaScanCodeRequest,
     VbaSyncModuleRequest,
     VbaRemoveModuleRequest,
+    VbaExportModuleRequest,
 )
 from excelforge.tools.registry import ToolRegistry
 
@@ -174,35 +175,76 @@ def register_vba_tools(mcp: FastMCP, ctx: Any, registry: ToolRegistry) -> None:
                 default_workbook_id=req.workbook_id,
             )
             return envelope.model_dump(mode="json")
-        elif action == "inline":
-            req = VbaExecuteInlineRequest(
-                workbook_id=workbook_id,
-                code=code or "",
-                procedure_name=procedure_name or "Main",
-                timeout_seconds=timeout_seconds,
-                client_request_id=client_request_id,
-            )
-            envelope = ctx.operation_service.run(
-                tool_name="vba.execute",
-                client_request_id=req.client_request_id,
-                operation_fn=lambda: ctx.vba_service.execute_inline(
-                    workbook_id=req.workbook_id,
-                    code=req.code,
-                    procedure_name=req.procedure_name,
-                    timeout_seconds=req.timeout_seconds,
-                ),
-                args_summary={"workbook_id": req.workbook_id, "code_length": len(req.code), "action": action},
-                default_workbook_id=req.workbook_id,
-            )
-            return envelope.model_dump(mode="json")
         else:
             return {
                 "success": False,
                 "code": "E400_BAD_REQUEST",
-                "message": f"Invalid action: {action}. Must be 'macro' or 'inline'",
+                "message": f"Invalid action: {action}. Must be 'macro'",
             }
 
     registry.add("vba.execute", "vba_tools", "vba")
+
+    @mcp.tool(name="vba.import_module")
+    def vba_import_module(
+        workbook_id: str,
+        file_path: str,
+        module_name: str | None = None,
+        overwrite: bool = False,
+        client_request_id: str = "",
+    ) -> dict:
+        req = VbaImportModuleRequest(
+            workbook_id=workbook_id,
+            file_path=file_path,
+            module_name=module_name,
+            overwrite=overwrite,
+            client_request_id=client_request_id,
+        )
+        envelope = ctx.operation_service.run(
+            tool_name="vba.import_module",
+            client_request_id=req.client_request_id,
+            operation_fn=lambda: ctx.vba_service.import_module(
+                workbook_id=req.workbook_id,
+                file_path=req.file_path,
+                module_name=req.module_name,
+                overwrite=req.overwrite,
+            ),
+            args_summary={"workbook_id": req.workbook_id, "file_path": req.file_path, "module_name": req.module_name},
+            default_workbook_id=req.workbook_id,
+        )
+        return envelope.model_dump(mode="json")
+
+    registry.add("vba.import_module", "vba_tools", "vba")
+
+    @mcp.tool(name="vba.export_module")
+    def vba_export_module(
+        workbook_id: str,
+        module_name: str,
+        file_path: str,
+        overwrite: bool = False,
+        client_request_id: str = "",
+    ) -> dict:
+        req = VbaExportModuleRequest(
+            workbook_id=workbook_id,
+            module_name=module_name,
+            file_path=file_path,
+            overwrite=overwrite,
+            client_request_id=client_request_id,
+        )
+        envelope = ctx.operation_service.run(
+            tool_name="vba.export_module",
+            client_request_id=req.client_request_id,
+            operation_fn=lambda: ctx.vba_service.export_module(
+                workbook_id=req.workbook_id,
+                module_name=req.module_name,
+                file_path=req.file_path,
+                overwrite=req.overwrite,
+            ),
+            args_summary={"workbook_id": req.workbook_id, "module_name": req.module_name, "file_path": req.file_path},
+            default_workbook_id=req.workbook_id,
+        )
+        return envelope.model_dump(mode="json")
+
+    registry.add("vba.export_module", "vba_tools", "vba")
 
     @mcp.tool(name="vba.compile")
     def vba_compile(
