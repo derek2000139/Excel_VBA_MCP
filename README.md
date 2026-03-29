@@ -99,7 +99,6 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile basic
 
 | 文档 | 内容 |
 |------|------|
-| [工具域 Profile 参考手册](docs/tool_domain_profile_reference.md) | Tool / Bundle / Profile 完整对照矩阵与查询索引 |
+| [工具域 Profile 参考手册](docs/ExcelForge%20V2.4%20%E2%80%94%20%E5%B7%A5%E5%85%B7%E5%9F%9F%20Profile%20%E5%8F%82%E8%80%83%E6%89%8B%E5%86%8C.md) | Tool / Bundle / Profile 完整对照矩阵与查询索引 |
 | [Trae AI 使用说明](docs/clients/trae_usage.md) | Trae 推荐 Profile、截断问题与配置示例 |
 | [v2.4 变更日志](docs/changelog/v2.4.md) | 本版新增工具、Bundle 拆分、Profile 重整记录 |
-| [设计文档](docs/design/) | 架构、Profile 设计原则、框架预留 |
