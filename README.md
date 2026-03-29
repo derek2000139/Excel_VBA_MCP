@@ -27,12 +27,12 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile basic
 
 | Profile         | <br /> | 适用场景              | 工具数    | 启用的 Bundle                         | 包含的工具域                                                    |
 | --------------- | :----- | ----------------- | ------ | ---------------------------------- | --------------------------------------------------------- |
-| `basic_edit`    | <br /> | 日常编辑（推荐新手）        | 31     | foundation + edit                  | server / workbook / names / sheet / range                 |
-| `calc_format`   | <br /> | 公式与格式处理           | 42     | foundation + edit + calc\_format   | 上述 + formula / format                                     |
-| `automation`    | <br /> | VBA 自动化与恢复        | 36     | foundation + automation + recovery | server / workbook / names / vba / recovery                |
-| `data_workflow` | <br /> | Power Query / 数据流 | 28     | foundation + data + analysis       | server / workbook / names / pq / analysis                 |
-| `reporting`     | <br /> | 报表与分析             | 28     | foundation + report + analysis     | server / workbook / names / chart / pivot / model / audit |
-| `all`           | <br /> | 全量开发调试            | **64** | 全部 9 个 bundle                      | 全部 12 个域                                                  |
+| `basic_edit`    | <br /> | 日常编辑（推荐新手）        | 35     | foundation + edit_basic + edit_structure | server / workbook / names / sheet / range                 |
+| `calc_format`   | <br /> | 公式与格式处理           | 46     | foundation + edit + calc\_format   | 上述 + formula / format                                     |
+| `automation`    | <br /> | VBA 自动化与恢复        | 40     | foundation + automation + recovery | server / workbook / names / vba / recovery                |
+| `data_workflow` | <br /> | Power Query / 数据流 | 33     | foundation + data + analysis + workbook_ops | server / workbook / names / pq / analysis / workbook_ops |
+| `reporting`     | <br /> | 报表与分析             | 32     | foundation + report + analysis     | server / workbook / names / chart / pivot / model / audit |
+| `all`           | <br /> | 全量开发调试            | **75+** | 全部 bundle                      | 全部域                                                  |
 
 > **如何选择 Profile？**
 >
@@ -50,16 +50,18 @@ uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile basic
 | 工具域               | basic\_edit | calc\_format | automation | data\_workflow | reporting |  all |
 | ----------------- | :---------: | :----------: | :--------: | :------------: | :-------: | :--: |
 | server (2)        |      ✅      |       ✅      |      ✅     |        ✅       |     ✅     |   ✅  |
-| workbook (6)      |      ✅      |       ✅      |      ✅     |        ✅       |     ✅     |   ✅  |
+| workbook (12)     |      ✅      |       ✅      |      ✅     |        ✅       |     ✅     |   ✅  |
 | names (4)         |      ✅      |       ✅      |      ✅     |        ✅       |     ✅     |   ✅  |
-| sheet (8)         |      ✅      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
-| range (11)        |      ✅      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
+| sheet (12)        |      ✅      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
+| range (13)        |      ✅      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
 | formula (4)       |      ❌      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
 | format (7)        |      ❌      |       ✅      |      ❌     |        ❌       |     ❌     |   ✅  |
 | vba (8)           |      ❌      |       ❌      |      ✅     |        ❌       |     ❌     |   ✅  |
 | recovery (8)      |      ❌      |       ❌      |      ✅     |        ❌       |     ❌     |   ✅  |
-| analysis (1)      |      ❌      |       ❌      |      ❌     |        ✅       |     ✅     |   ✅  |
+| analysis (6)      |      ❌      |       ❌      |      ❌     |        ✅       |     ✅     |   ✅  |
 | pq (5)            |      ❌      |       ❌      |      ❌     |        ✅       |     ❌     |   ✅  |
+| table (8)         |      ❌      |       ❌      |      ❌     |        ✅       |     ❌     |   ✅  |
+| workbook_ops (6)  |      ❌      |       ❌      |      ❌     |        ✅       |     ❌     |   ✅  |
 | chart/pivot/model |      ❌      |       ❌      |      ❌     |        ❌       |    ⚠️ 空   | ⚠️ 空 |
 
 ### 4. 如果只想单独装备某些功能
@@ -273,6 +275,34 @@ V2.3 强化了**单受控实例约束**：
 
 如需自动 reopen，可在调用时传入 `reopen_workbooks=True`（不推荐，默认关闭）。
 
+### V2.4 新特性：多域工具扩充与框架预留
+
+V2.4 大幅扩充了工具域并引入了框架预留结构：
+
+#### 新增工具域
+
+| 域 | 新增工具数 | 说明 |
+|---|--------|------|
+| table | 8 | 表格创建/检查/调整/样式/统计行 |
+| analysis | 5 | 结构扫描/公式分布/链接/隐藏元素/报告导出 |
+| workbook_ops | 6 | 另存/刷新/重算/链接列表/PDF导出/CSV导出 |
+| sheet 扩充 | 4 | copy/move/hide/unhide |
+| range 扩充 | 2 | find_replace/autofit |
+
+#### 框架预留结构
+
+- **Tool Manifest 新字段**：`execution_mode`、`backend_requirement`、`supports_batch`
+- **server.health 新增**：`backend` 结构（version/supports_batch/supports_artifact_export/execution_mode）
+- **bundles.yaml 预留**：`artifact_export` bundle（待实现）
+
+#### 诊断参数
+
+| 参数 | 说明 |
+|-----|------|
+| `--dump-tools` | 输出当前 Profile 所有工具列表 |
+| `--dump-tools-with-index` | 输出带索引的工具列表 |
+| `--dump-profile-resolution` | 输出 Profile 解析过程 |
+
 ### --restart-runtime 策略推荐
 
 | 场景   | 推荐策略                         | 说明                      |
@@ -378,11 +408,15 @@ vba.inspect_project(workbook_id="your_workbook_id")
 
 ### Profile 工具数量参考
 
-| Profile     | 工具数  | tool\_budget | 说明             |
+| Profile     | 工具数  | tool_budget | 说明             |
 | ----------- | ---- | ------------ | -------------- |
-| basic\_edit | 31   | 35           | 基础编辑够用         |
-| automation  | 36   | 40           | VBA + Recovery |
-| vba\_first  | \~28 | 30           | 调试专用           |
+| basic_edit  | 35   | 40           | 基础编辑够用         |
+| calc_format | 46   | 50           | 公式与格式         |
+| automation  | 40   | 45           | VBA + Recovery |
+| data_workflow | 33 | 39           | **Trae AI 推荐**（低于39限制）|
+| vba_first  | ~28 | 30           | 调试专用           |
+
+> **Trae AI 用户推荐使用 `data_workflow` profile**：该 profile 包含 33 个工具，低于 Trae AI 的 39 工具截断限制，且包含 table、analysis、workbook_ops 等常用工具。
 
 ## 文档
 
