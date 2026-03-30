@@ -38,6 +38,13 @@ bundles:
     dependencies:
       - foundation
 
+  format_rules:
+    description: "条件格式规则写入"
+    domains:
+      - conditional_format
+    dependencies:
+      - foundation
+
   automation:
     description: "VBA 自动化"
     domains:
@@ -85,11 +92,27 @@ bundles:
     maturity: experimental
 
   artifact_export:
-    description: "文件包提取与导出（v2.5 预留）"
-    tools: []
+    description: "文件包提取与导出"
+    domains:
+      - package
     dependencies:
       - foundation
-    maturity: planned
+
+  artifact_patch:
+    description: "OOXML 文件包补丁与克隆输出"
+    domains:
+      - package_patch
+    dependencies:
+      - foundation
+      - artifact_export
+
+  batch_ops:
+    description: "批量文件处理"
+    domains:
+      - batch
+    dependencies:
+      - foundation
+      - artifact_export
 
 domains:
   server:
@@ -185,6 +208,25 @@ domains:
     maturity: stable
     risk_level: low
 
+  conditional_format:
+    tools:
+      - format.apply_conditional_rule
+      - format.update_conditional_rule
+      - format.copy_conditional_rules
+      - format.clear_conditional_rules
+    maturity: stable
+    risk_level: medium
+    execution_mode: file_package
+    backend_requirement: file_only
+    supported_extensions:
+      - .xlsx
+      - .xlsm
+      - .xltx
+      - .xltm
+    default_output_mode: clone_write
+    supports_dry_run: true
+    writes_artifact: true
+
   analysis:
     tools:
       - audit.list_operations
@@ -258,16 +300,112 @@ domains:
     risk_level: medium
 
   chart:
-    tools: []
-    maturity: experimental
-    risk_level: medium
+    tools:
+      - chart.list_charts
+      - chart.inspect
+      - chart.list_series
+      - chart.export_spec
+    maturity: stable
+    risk_level: low
+    execution_mode: file_package
+    backend_requirement: file_only
+    supported_extensions:
+      - .xlsx
+      - .xlsm
+      - .xltx
+      - .xltm
+    default_output_mode: read_only
+    supports_dry_run: true
+    writes_artifact: false
 
   pivot:
     tools: []
     maturity: experimental
     risk_level: medium
 
+  chart:
+    tools:
+      - chart.list_charts
+      - chart.inspect
+      - chart.list_series
+      - chart.export_spec
+    maturity: experimental
+    risk_level: medium
+    execution_mode: file_package
+    backend_requirement: file_only
+    supported_extensions:
+      - .xlsx
+      - .xlsm
+      - .xltx
+      - .xltm
+    default_output_mode: read_only
+    supports_dry_run: true
+    writes_artifact: false
+
   model:
     tools: []
     maturity: experimental
     risk_level: medium
+
+  package:
+    tools:
+      - package.inspect_manifest
+      - package.list_parts
+      - package.get_part_xml
+      - package.extract_part
+      - package.list_media
+      - package.list_custom_xml
+      - package.detect_features
+      - package.export_manifest
+    maturity: stable
+    risk_level: low
+    execution_mode: file_package
+    backend_requirement: file_only
+    supported_extensions:
+      - .xlsx
+      - .xlsm
+      - .xltx
+      - .xltm
+    default_output_mode: read_only
+    supports_dry_run: true
+    writes_artifact: false
+
+  package_patch:
+    tools:
+      - package.clone_with_patch
+      - package.replace_shared_strings
+      - package.patch_defined_names
+      - package.update_docprops
+      - package.merge_template_parts
+      - package.remove_external_links
+      - package.compare_workbooks
+    maturity: stable
+    risk_level: medium
+    execution_mode: file_package
+    backend_requirement: file_only
+    supported_extensions:
+      - .xlsx
+      - .xlsm
+      - .xltx
+      - .xltm
+    default_output_mode: clone_write
+    supports_dry_run: true
+    writes_artifact: true
+
+  batch:
+    tools:
+      - package.batch_extract_parts
+      - package.batch_transform
+      - package.batch_compare
+    maturity: stable
+    risk_level: medium
+    execution_mode: batch
+    backend_requirement: file_only
+    supported_extensions:
+      - .xlsx
+      - .xlsm
+      - .xltx
+      - .xltm
+    default_output_mode: clone_write
+    supports_dry_run: true
+    writes_artifact: true

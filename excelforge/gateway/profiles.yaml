@@ -8,12 +8,13 @@ profiles:
     tool_budget: 20
 
   calc_format:
-    description: "公式与格式编辑"
+    description: "公式、格式与条件格式"
     category: user
     bundles:
       - foundation
       - edit_basic
       - calc_format
+      - format_rules
     tool_budget: 30
 
   automation:
@@ -35,12 +36,14 @@ profiles:
     tool_budget: 25
 
   reporting:
-    description: "报表与分析（预留扩充）"
+    description: "导出、分析与图表检查"
     category: user
     bundles:
       - foundation
+      - workbook_ops
       - analysis
-    tool_budget: 25
+      - report
+    tool_budget: 30
 
   all:
     description: "全部工具，仅用于 CLI / 回归测试"
@@ -78,3 +81,30 @@ profiles:
       - data
       - analysis
     tool_budget: 35
+
+  artifact_extract:
+    description: "OOXML 文件包提取与检查"
+    category: user
+    bundles:
+      - foundation
+      - artifact_export
+    tool_budget: 20
+
+  artifact_transform:
+    description: "OOXML 单文件变换与补丁"
+    category: user
+    bundles:
+      - foundation
+      - artifact_export
+      - artifact_patch
+    tool_budget: 30
+
+  batch_delivery:
+    description: "批量提取、批量补丁与批量对比"
+    category: user
+    bundles:
+      - foundation
+      - artifact_export
+      - artifact_patch
+      - batch_ops
+    tool_budget: 30

@@ -62,3 +62,45 @@ profiles:
       - edit_basic
       - calc_format
     tool_budget: 30
+
+  artifact_first:
+    description: "OOXML 提取专题开发"
+    category: development
+    bundles:
+      - foundation
+      - artifact_export
+    tool_budget: 20
+
+  package_first:
+    description: "Package 变换专题开发"
+    category: development
+    bundles:
+      - foundation
+      - artifact_export
+      - artifact_patch
+    tool_budget: 30
+
+  batch_first:
+    description: "批量处理专题开发"
+    category: development
+    bundles:
+      - foundation
+      - artifact_export
+      - batch_ops
+    tool_budget: 25
+
+  chart_first:
+    description: "图表专题开发"
+    category: development
+    bundles:
+      - foundation
+      - report
+    tool_budget: 15
+
+  rules_first:
+    description: "条件格式专题开发"
+    category: development
+    bundles:
+      - foundation
+      - format_rules
+    tool_budget: 15
