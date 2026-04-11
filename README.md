@@ -4,6 +4,55 @@
 
 当前版本 **v2.5.0** — 18 个能力域 · 101+ 个工具 · 14 个 Bundle · 12 个 Profile（含 5 个开发 Profile）。
 
+## 安装
+
+### 前置要求
+
+| 项目 | 要求 |
+|------|------|
+| Python | ≥ 3.11 |
+| 操作系统 | Windows（需要 Excel COM 自动化） |
+| Excel | Windows 版 Microsoft Excel |
+| 包管理 | uv |
+
+### 第一步：安装 uv（如尚未安装）
+
+```powershell
+pip install uv
+```
+
+### 第二步：克隆仓库
+
+```powershell
+git clone <你的仓库地址>
+cd ExcelForge
+```
+
+### 第三步：配置
+
+```powershell
+cp config.example.yaml runtime-config.yaml
+```
+
+### 第四步：安装依赖
+
+```powershell
+uv sync
+```
+
+### 第五步：快速验证
+
+```powershell
+# 查看可用 Profile
+uv run python -m excelforge.gateway.host --config excel-mcp.yaml --list-profiles
+
+# 查看可用 Bundle
+uv run python -m excelforge.gateway.host --config excel-mcp.yaml --list-bundles
+
+# 查看当前 Profile 的工具清单
+uv run python -m excelforge.gateway.host --config excel-mcp.yaml --profile basic_edit --dump-tools
+```
+
 ## 启动
 
 ```bash
